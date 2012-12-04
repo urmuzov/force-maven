@@ -1,0 +1,11 @@
+target
+*.ipr
+*.iml
+*.iws
+*.ids
+*.pyc
+.idea
+.project
+.settings
+.classpath
+.DS_Store
