@@ -1,0 +1,74 @@
+package ${outputPackage};
+
+import com.sforce.soap.partner.sobject.SObject;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class Fields {
+    private final String namespace;
+    private final String self;
+    private final List<Field> allFields = new ArrayList<Field>();
+    private final Field<String> id;
+    private final Field<String> name;
+    private final Field<String> owner;
+    private final Field<String> createdBy;
+    private final Field<String> lastModifiedBy;
+
+    public Fields(String namespace, String self) {
+        this.namespace = namespace;
+        this.self = self;
+        this.id = new Field<String>(this, "id", "Id", FieldType.STRING, false);
+        allFields.add(id);
+        this.name = new Field<String>(this, "name", "Name", FieldType.STRING, false);
+        allFields.add(name);
+        this.owner = new Field<String>(this, "owner", "Owner", FieldType.STRING, false);
+        allFields.add(owner);
+        this.createdBy = new Field<String>(this, "createdBy", "CreatedBy", FieldType.STRING, false);
+        allFields.add(createdBy);
+        this.lastModifiedBy = new Field<String>(this, "lastModifiedBy", "LastModifiedBy", FieldType.STRING, false);
+        allFields.add(lastModifiedBy);
+    }
+
+    protected void addField(Field field) {
+        allFields.add(field);
+    }
+
+    public List<Field> allFields() {
+        return Collections.unmodifiableList(allFields);
+    }
+
+    public String namespace() {
+        return namespace;
+    }
+
+    public String self() {
+        return self;
+    }
+
+    public SObject newSObject() {
+        SObject out = new SObject();
+        out.setType(self);
+        return out;
+    }
+
+    public Field<String> id() {
+        return id;
+    }
+
+    public Field<String> name() {
+        return name;
+    }
+
+    public Field<String> owner() {
+        return owner;
+    }
+
+    public Field<String> createdBy() {
+        return createdBy;
+    }
+
+    public Field<String> lastModifiedBy() {
+        return lastModifiedBy;
+    }
+}

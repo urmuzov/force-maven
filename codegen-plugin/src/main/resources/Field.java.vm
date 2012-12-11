@@ -1,0 +1,71 @@
+package ${outputPackage};
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.Calendar;
+import com.sforce.soap.partner.sobject.SObject;
+
+public class Field<T> {
+    private final Fields fields;
+    private final String javaName;
+    private final String sfName;
+    private final FieldType type;
+    private final boolean custom;
+
+    public Field(Fields fields, String javaName, String sfName, FieldType type, boolean custom) {
+        this.fields = fields;
+        this.javaName = javaName;
+        this.sfName = sfName;
+        this.type = type;
+        this.custom = custom;
+    }
+
+    private String getNamespacePrefix() {
+        String namespace = fields.namespace();
+        return (namespace == null || namespace.trim().isEmpty()) ? "" : namespace + "__" ;
+    }
+
+    public String javaName() {
+        return javaName;
+    }
+
+    public String apiName() {
+        return getNamespacePrefix() + sfName;
+    }
+
+    public FieldType type() {
+        return type;
+    }
+
+    @Override
+    public String toString() {
+        return apiName();
+    }
+
+    public T valueFrom(SObject sObject) {
+        Object objValue = sObject.getField(apiName());
+        if (objValue == null) {
+            return null;
+        }
+        String strValue = objValue.toString();
+        if (type == FieldType.DOUBLE) {
+            return (T) Double.valueOf(strValue);
+        } else if (type == FieldType.BOOLEAN) {
+            return (T) Boolean.valueOf(strValue);
+        } else if (type == FieldType.CALENDAR) {
+            // Calendar fields returns as GregorianCalendar objects
+            return (T) objValue;
+        }
+        return (T) objValue;
+    }
+
+
+    public void valueTo(SObject sObject, T value) {
+        if (apiName().equalsIgnoreCase("id")) {
+            sObject.setId(value.toString());
+        } else {
+            sObject.setField(apiName(), value);
+        }
+
+    }
+}
