@@ -1,0 +1,24 @@
+package ${outputPackage};
+
+import java.util.Calendar;
+
+public class ${objectName} extends Fields {
+
+#foreach($fieldName in $fieldNames)
+    private final Field<${typeClassMap.get(${fieldName})}> $fieldName;
+#end
+
+    public ${objectName}(String namespace) {
+        super(namespace, "$objectApiName");
+#foreach($fieldName in $fieldNames)
+        this.$fieldName = new Field<${typeClassMap.get(${fieldName})}>(this, "$fieldName", "$oldNamesMap.get($fieldName)", FieldType.${typeEnumMap.get(${fieldName})}, true);
+        addField($fieldName);
+#end
+    }
+
+#foreach($fieldName in $fieldNames)
+    public Field<${typeClassMap.get(${fieldName})}> $fieldName() {
+        return $fieldName;
+    }
+#end
+}
