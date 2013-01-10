@@ -20,17 +20,12 @@ public class Field<T> {
         this.custom = custom;
     }
 
-    private String getNamespacePrefix() {
-        String namespace = fields.namespace();
-        return (namespace == null || namespace.trim().isEmpty()) ? "" : namespace + "__" ;
-    }
-
     public String javaName() {
         return javaName;
     }
 
     public String apiName() {
-        return getNamespacePrefix() + sfName;
+        return (custom ? fields.namespacePrefix() : "" ) + sfName;
     }
 
     public FieldType type() {

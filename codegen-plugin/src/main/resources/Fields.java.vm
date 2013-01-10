@@ -42,13 +42,17 @@ public class Fields {
         return namespace;
     }
 
+    public String namespacePrefix() {
+        return (namespace == null || namespace.trim().isEmpty()) ? "" : namespace + "__" ;
+    }
+
     public String self() {
-        return self;
+        return namespacePrefix() + self;
     }
 
     public SObject newSObject() {
         SObject out = new SObject();
-        out.setType(self);
+        out.setType(self());
         return out;
     }
 

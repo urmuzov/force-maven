@@ -2,7 +2,7 @@ package ${outputPackage};
 
 import java.util.Calendar;
 
-public class ${objectName} extends Fields {
+public class ${objectName} extends #if($customSettings.contains($objectName))CustomSettings #else Fields #end{
 
 #foreach($fieldName in $fieldNames)
     private final Field<${typeClassMap.get(${fieldName})}> $fieldName;

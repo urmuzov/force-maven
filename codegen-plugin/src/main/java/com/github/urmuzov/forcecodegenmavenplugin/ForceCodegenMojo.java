@@ -127,6 +127,7 @@ public class ForceCodegenMojo extends AbstractMojo {
 
             merge("Field.java.vm", "Field.java", vc);
             merge("Fields.java.vm", "Fields.java", vc);
+            merge("CustomSettings.java.vm", "CustomSettings.java", vc);
 
             DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 
@@ -144,6 +145,10 @@ public class ForceCodegenMojo extends AbstractMojo {
                 vc.put("objectApiName", objectName);
                 objectNames.add(newObjectName);
                 Document document = builder.parse(objectFile);
+                List<String> customSettings = new ArrayList<String>();
+                if (!getElementsByTagName(document.getDocumentElement(), "customSettingsType").isEmpty()) {
+                    customSettings.add(newObjectName);
+                }
                 List<Node> fields = getElementsByTagName(document.getDocumentElement(), "fields");
                 List<String> fieldNames = new ArrayList<String>();
                 Map<String, String> oldNamesMap = new HashMap<String, String>();
@@ -215,6 +220,7 @@ public class ForceCodegenMojo extends AbstractMojo {
                 vc.put("oldNamesMap", oldNamesMap);
                 vc.put("typeEnumMap", typeEnumMap);
                 vc.put("typeClassMap", typeClassMap);
+                vc.put("customSettings", customSettings);
                 merge("FieldsExt.java.vm", newObjectName + ".java", vc);
                 merge("FieldType.java.vm", "FieldType.java", vc);
             }

@@ -1,0 +1,20 @@
+package ${outputPackage};
+
+import com.sforce.soap.partner.sobject.SObject;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class CustomSettings extends Fields {
+    private final Field<String> setupOwnerId;
+
+    public CustomSettings(String namespace, String self) {
+        super(namespace, self);
+        this.setupOwnerId = new Field<String>(this, "setupOwnerId", "SetupOwnerId", FieldType.STRING, false);
+        addField(setupOwnerId);
+    }
+
+    public Field<String> setupOwnerId() {
+        return setupOwnerId;
+    }
+}
