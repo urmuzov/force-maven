@@ -210,6 +210,10 @@ public class ForceCodegenMojo extends AbstractMojo {
                         fieldNames.add(newFullName);
                         typeEnumMap.put(newFullName, "STRING");
                         typeClassMap.put(newFullName, "String");
+                    } else if (type.equals("EncryptedText")) {
+                        fieldNames.add(newFullName);
+                        typeEnumMap.put(newFullName, "STRING");
+                        typeClassMap.put(newFullName, "String");
                     } else if (type.equals("Summary")) {
                         // skipping
                     } else {
