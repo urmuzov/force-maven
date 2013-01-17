@@ -5,4 +5,5 @@ public enum FieldType {
     BOOLEAN,
     CALENDAR,
     STRING,
+    FORMULA,
 }

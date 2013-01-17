@@ -170,6 +170,7 @@ public class ForceCodegenMojo extends AbstractMojo {
                         throw new MojoExecutionException("Parsing error: type is null for field (" + fullName + ") for object (" + objectName + ")");
                     }
                     String type = typeNode.getTextContent();
+                    boolean formula = getFirstElementsByTagName(field, "formula") != null;
                     if (type.equals("Text")) {
                         fieldNames.add(newFullName);
                         typeEnumMap.put(newFullName, "STRING");
@@ -218,6 +219,9 @@ public class ForceCodegenMojo extends AbstractMojo {
                         // skipping
                     } else {
                         throw new MojoExecutionException("Parsing error: unknown type (" + type + ") for field (" + fullName + ") for object (" + objectName + ")");
+                    }
+                    if (formula) {
+                        typeEnumMap.put(newFullName, "FORMULA");
                     }
                 }
                 vc.put("fieldNames", fieldNames);

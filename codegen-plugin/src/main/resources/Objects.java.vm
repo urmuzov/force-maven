@@ -2,8 +2,12 @@ package ${outputPackage};
 
 import java.util.Collection;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.HashMap;
 
 public class Objects {
+
+    private Map<String, Fields> byApiName = new HashMap<String, Fields>();
 
 #foreach($objectName in $objectNames)
     private final $objectName $objectName;
@@ -12,6 +16,7 @@ public class Objects {
     public Objects(String namespace) {
 #foreach($objectName in $objectNames)
         this.$objectName = new $objectName(namespace);
+        this.byApiName.put(this.${objectName}.self(), this.$objectName);
 #end
     }
 
@@ -31,6 +36,10 @@ public class Objects {
 
     public String select(Field... fields) {
         return select(Arrays.asList(fields));
+    }
+
+    public Fields byApiName(String apiName) {
+        return byApiName.get(apiName);
     }
 
 #foreach($objectName in $objectNames)
