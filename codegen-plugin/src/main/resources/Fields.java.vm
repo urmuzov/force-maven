@@ -4,38 +4,52 @@ import com.sforce.soap.partner.sobject.SObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 public class Fields {
     private final String namespace;
-    private final String self;
+    private final String sfName;
     private final List<Field> allFields = new ArrayList<Field>();
+    private final Map<String, Field> byApiName = new HashMap<String, Field>();
+    private final Map<String, Field> bySfName = new HashMap<String, Field>();
     private final Field<String> id;
     private final Field<String> name;
     private final Field<String> owner;
     private final Field<String> createdBy;
     private final Field<String> lastModifiedBy;
 
-    public Fields(String namespace, String self) {
+    public Fields(String namespace, String sfName) {
         this.namespace = namespace;
-        this.self = self;
+        this.sfName = sfName;
         this.id = new Field<String>(this, "id", "Id", FieldType.STRING, false);
-        allFields.add(id);
+        addField(id);
         this.name = new Field<String>(this, "name", "Name", FieldType.STRING, false);
-        allFields.add(name);
+        addField(name);
         this.owner = new Field<String>(this, "owner", "Owner", FieldType.STRING, false);
-        allFields.add(owner);
+        addField(owner);
         this.createdBy = new Field<String>(this, "createdBy", "CreatedBy", FieldType.STRING, false);
-        allFields.add(createdBy);
+        addField(createdBy);
         this.lastModifiedBy = new Field<String>(this, "lastModifiedBy", "LastModifiedBy", FieldType.STRING, false);
-        allFields.add(lastModifiedBy);
+        addField(lastModifiedBy);
     }
 
     protected void addField(Field field) {
         allFields.add(field);
+        byApiName.put(field.apiName(), field);
+        bySfName.put(field.sfName(), field);
     }
 
     public List<Field> allFields() {
         return Collections.unmodifiableList(allFields);
+    }
+
+    public Field byApiName(String apiName) {
+        return byApiName.get(apiName);
+    }
+
+    public Field bySfName(String sfName) {
+        return bySfName.get(sfName);
     }
 
     public String namespace() {
@@ -46,13 +60,21 @@ public class Fields {
         return (namespace == null || namespace.trim().isEmpty()) ? "" : namespace + "__" ;
     }
 
+    public String apiName() {
+        return namespacePrefix() + sfName;
+    }
+
     public String self() {
-        return namespacePrefix() + self;
+        return apiName();
+    }
+
+    public String sfName() {
+        return sfName;
     }
 
     public SObject newSObject() {
         SObject out = new SObject();
-        out.setType(self());
+        out.setType(sfName());
         return out;
     }
 

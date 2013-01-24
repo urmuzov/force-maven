@@ -16,7 +16,7 @@ public class Objects {
     public Objects(String namespace) {
 #foreach($objectName in $objectNames)
         this.$objectName = new $objectName(namespace);
-        this.byApiName.put(this.${objectName}.self(), this.$objectName);
+        this.byApiName.put(this.${objectName}.apiName(), this.$objectName);
 #end
     }
 

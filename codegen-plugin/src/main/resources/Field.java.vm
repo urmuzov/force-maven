@@ -3,7 +3,11 @@ package ${outputPackage};
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Calendar;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import com.sforce.soap.partner.sobject.SObject;
+import org.joda.time.DateTime;
 
 public class Field<T> {
     private final Fields fields;
@@ -26,6 +30,10 @@ public class Field<T> {
 
     public String apiName() {
         return (custom ? fields.namespacePrefix() : "" ) + sfName;
+    }
+
+    public String sfName() {
+        return sfName;
     }
 
     public FieldType type() {
@@ -55,12 +63,53 @@ public class Field<T> {
     }
 
 
-    public void valueTo(SObject sObject, T value) {
-        if (apiName().equalsIgnoreCase("id")) {
-            sObject.setId(value.toString());
-        } else {
-            sObject.setField(apiName(), value);
-        }
+    public void valueTo(SObject sObject, Object value) {
+        sObject.setField(apiName(), convertValue(value));
+    }
 
+    private Object convertValue(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (apiName().equalsIgnoreCase("id")) {
+            return value.toString();
+        }
+        String strValue = value.toString();
+        if (type == FieldType.DOUBLE) {
+            return value instanceof Double ? value : Double.valueOf(strValue);
+        } else if (type == FieldType.BOOLEAN) {
+            return value instanceof Boolean ? value : Boolean.valueOf(strValue);
+        } else if (type == FieldType.CALENDAR) {
+            if (value instanceof Calendar) {
+                return value;
+            } else if (value instanceof Number) {
+                GregorianCalendar cal = new GregorianCalendar();
+                cal.setTimeInMillis(((Number) value).longValue());
+                return cal;
+            } else if (value instanceof Date) {
+                GregorianCalendar cal = new GregorianCalendar();
+                cal.setTime((Date) value);
+                return cal;
+            } else if (value instanceof DateTime) {
+                return ((DateTime) value).toGregorianCalendar();
+            } else {
+                try {
+                    long millis = Long.parseLong(strValue);
+                    GregorianCalendar cal = new GregorianCalendar();
+                    cal.setTimeInMillis(millis);
+                    return cal;
+                } catch (NumberFormatException ex) {
+                    try {
+                        DateTime dt = DateTime.parse(strValue);
+                        return dt.toGregorianCalendar();
+                    } catch (Exception ex2) {
+                        // we tried but can't parse it
+                        return value;
+                    }
+                }
+            }
+        } else {
+            return value;
+        }
     }
 }

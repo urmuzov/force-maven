@@ -8,8 +8,8 @@ import java.util.List;
 public class CustomSettings extends Fields {
     private final Field<String> setupOwnerId;
 
-    public CustomSettings(String namespace, String self) {
-        super(namespace, self);
+    public CustomSettings(String namespace, String sfName) {
+        super(namespace, sfName);
         this.setupOwnerId = new Field<String>(this, "setupOwnerId", "SetupOwnerId", FieldType.STRING, false);
         addField(setupOwnerId);
     }
