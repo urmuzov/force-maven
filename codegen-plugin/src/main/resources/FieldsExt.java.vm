@@ -8,8 +8,8 @@ public class ${objectName} extends #if($customSettings.contains($objectName))Cus
     private final Field<${typeClassMap.get(${fieldName})}> $fieldName;
 #end
 
-    public ${objectName}(String namespace) {
-        super(namespace, "$objectApiName");
+    public ${objectName}(Objects objects) {
+        super(objects, "$objectApiName");
 #foreach($fieldName in $fieldNames)
         this.$fieldName = new Field<${typeClassMap.get(${fieldName})}>(this, "$fieldName", "$oldNamesMap.get($fieldName)", FieldType.${typeEnumMap.get(${fieldName})}, true);
         addField($fieldName);

@@ -7,6 +7,7 @@ import java.util.HashMap;
 
 public class Objects {
 
+    private final String namespace;
     private Map<String, Fields> byApiName = new HashMap<String, Fields>();
 
 #foreach($objectName in $objectNames)
@@ -14,8 +15,9 @@ public class Objects {
 #end
 
     public Objects(String namespace) {
+        this.namespace = namespace;
 #foreach($objectName in $objectNames)
-        this.$objectName = new $objectName(namespace);
+        this.$objectName = new $objectName(this);
         this.byApiName.put(this.${objectName}.apiName(), this.$objectName);
 #end
     }
@@ -36,6 +38,27 @@ public class Objects {
 
     public String select(Field... fields) {
         return select(Arrays.asList(fields));
+    }
+
+    public String namespace() {
+        return namespace;
+    }
+
+    public String namespacePrefix() {
+        return (namespace == null || namespace.trim().isEmpty()) ? "" : namespace + "__" ;
+    }
+
+    public String withNamespace(String name) {
+        return namespacePrefix() + name;
+    }
+
+
+    public Collection<String> allApiNames() {
+        return byApiName.keySet();
+    }
+
+    public Collection<Fields> allFields() {
+        return byApiName.values();
     }
 
     public Fields byApiName(String apiName) {

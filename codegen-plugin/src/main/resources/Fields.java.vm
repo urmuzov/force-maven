@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 public class Fields {
-    private final String namespace;
+    private final Objects objects;
     private final String sfName;
     private final List<Field> allFields = new ArrayList<Field>();
     private final Map<String, Field> byApiName = new HashMap<String, Field>();
@@ -19,8 +19,8 @@ public class Fields {
     private final Field<String> createdBy;
     private final Field<String> lastModifiedBy;
 
-    public Fields(String namespace, String sfName) {
-        this.namespace = namespace;
+    public Fields(Objects objects, String sfName) {
+        this.objects = objects;
         this.sfName = sfName;
         this.id = new Field<String>(this, "id", "Id", FieldType.STRING, false);
         addField(id);
@@ -52,16 +52,12 @@ public class Fields {
         return bySfName.get(sfName);
     }
 
-    public String namespace() {
-        return namespace;
-    }
-
-    public String namespacePrefix() {
-        return (namespace == null || namespace.trim().isEmpty()) ? "" : namespace + "__" ;
+    public String withNamespace(String name) {
+        return objects.withNamespace(name);
     }
 
     public String apiName() {
-        return namespacePrefix() + sfName;
+        return objects.withNamespace(sfName);
     }
 
     public String self() {

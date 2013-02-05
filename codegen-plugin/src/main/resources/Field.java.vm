@@ -29,7 +29,7 @@ public class Field<T> {
     }
 
     public String apiName() {
-        return (custom ? fields.namespacePrefix() : "" ) + sfName;
+        return custom ? fields.withNamespace(sfName) : sfName;
     }
 
     public String sfName() {
