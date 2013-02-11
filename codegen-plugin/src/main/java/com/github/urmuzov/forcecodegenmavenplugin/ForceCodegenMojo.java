@@ -179,6 +179,10 @@ public class ForceCodegenMojo extends AbstractMojo {
                         fieldNames.add(newFullName);
                         typeEnumMap.put(newFullName, "DOUBLE");
                         typeClassMap.put(newFullName, "Double");
+                    } else if (type.equals("Percent")) {
+                        fieldNames.add(newFullName);
+                        typeEnumMap.put(newFullName, "DOUBLE");
+                        typeClassMap.put(newFullName, "Double");
                     } else if (type.equals("MasterDetail")) {
                         fieldNames.add(newFullName);
                         typeEnumMap.put(newFullName, "STRING");
