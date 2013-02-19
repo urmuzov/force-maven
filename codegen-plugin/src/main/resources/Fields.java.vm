@@ -70,7 +70,7 @@ public class Fields {
 
     public SObject newSObject() {
         SObject out = new SObject();
-        out.setType(sfName());
+        out.setType(apiName());
         return out;
     }
 
