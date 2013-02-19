@@ -10,6 +10,7 @@ import java.util.HashMap;
 public class Fields {
     private final Objects objects;
     private final String sfName;
+    private final boolean custom;
     private final List<Field> allFields = new ArrayList<Field>();
     private final Map<String, Field> byApiName = new HashMap<String, Field>();
     private final Map<String, Field> bySfName = new HashMap<String, Field>();
@@ -22,6 +23,7 @@ public class Fields {
     public Fields(Objects objects, String sfName) {
         this.objects = objects;
         this.sfName = sfName;
+        this.custom = sfName.endsWith("__c");
         this.id = new Field<String>(this, "id", "Id", FieldType.STRING, false);
         addField(id);
         this.name = new Field<String>(this, "name", "Name", FieldType.STRING, false);
@@ -57,7 +59,7 @@ public class Fields {
     }
 
     public String apiName() {
-        return objects.withNamespace(sfName);
+        return custom ? objects.withNamespace(sfName) : sfName;
     }
 
     public String self() {
