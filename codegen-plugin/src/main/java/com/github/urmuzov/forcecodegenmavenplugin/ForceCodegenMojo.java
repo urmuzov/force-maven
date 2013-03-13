@@ -207,6 +207,10 @@ public class ForceCodegenMojo extends AbstractMojo {
                         fieldNames.add(newFullName);
                         typeEnumMap.put(newFullName, "CALENDAR");
                         typeClassMap.put(newFullName, "Calendar");
+                    } else if (type.equals("Date")) {
+                        fieldNames.add(newFullName);
+                        typeEnumMap.put(newFullName, "CALENDAR");
+                        typeClassMap.put(newFullName, "Calendar");
                     } else if (type.equals("Currency")) {
                         fieldNames.add(newFullName);
                         typeEnumMap.put(newFullName, "DOUBLE");

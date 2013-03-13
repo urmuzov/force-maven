@@ -76,7 +76,11 @@ public class Field<T> {
         }
         String strValue = value.toString();
         if (type == FieldType.DOUBLE) {
-            return value instanceof Double ? value : Double.valueOf(strValue);
+            if (value instanceof Number) {
+                return ((Number) value).doubleValue();
+            } else {
+                return value instanceof Double ? value : Double.valueOf(strValue);
+            }
         } else if (type == FieldType.BOOLEAN) {
             return value instanceof Boolean ? value : Boolean.valueOf(strValue);
         } else if (type == FieldType.CALENDAR) {
