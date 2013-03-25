@@ -24,15 +24,15 @@ public class Fields {
         this.objects = objects;
         this.sfName = sfName;
         this.custom = sfName.endsWith("__c");
-        this.id = new Field<String>(this, "id", "Id", FieldType.STRING, false);
+        this.id = new Field<String>(this, "id", "Id", FieldType.STRING, null, false);
         addField(id);
-        this.name = new Field<String>(this, "name", "Name", FieldType.STRING, false);
+        this.name = new Field<String>(this, "name", "Name", FieldType.STRING, 80, false);
         addField(name);
-        this.owner = new Field<String>(this, "owner", "Owner", FieldType.STRING, false);
+        this.owner = new Field<String>(this, "owner", "Owner", FieldType.STRING, null, false);
         addField(owner);
-        this.createdBy = new Field<String>(this, "createdBy", "CreatedBy", FieldType.STRING, false);
+        this.createdBy = new Field<String>(this, "createdBy", "CreatedBy", FieldType.STRING, null, false);
         addField(createdBy);
-        this.lastModifiedBy = new Field<String>(this, "lastModifiedBy", "LastModifiedBy", FieldType.STRING, false);
+        this.lastModifiedBy = new Field<String>(this, "lastModifiedBy", "LastModifiedBy", FieldType.STRING, null, false);
         addField(lastModifiedBy);
     }
 

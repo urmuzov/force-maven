@@ -154,6 +154,7 @@ public class ForceCodegenMojo extends AbstractMojo {
                 Map<String, String> oldNamesMap = new HashMap<String, String>();
                 Map<String, String> typeEnumMap = new HashMap<String, String>();
                 Map<String, String> typeClassMap = new HashMap<String, String>();
+                Map<String, String> lengthMap = new HashMap<String, String>();
                 for (Node field : fields) {
                     Node fullNameNode = getFirstElementsByTagName(field, "fullName");
                     if (fullNameNode == null) {
@@ -170,6 +171,11 @@ public class ForceCodegenMojo extends AbstractMojo {
                         throw new MojoExecutionException("Parsing error: type is null for field (" + fullName + ") for object (" + objectName + ")");
                     }
                     String type = typeNode.getTextContent();
+                    Node lengthNode = getFirstElementsByTagName(field, "length");
+                    String length = lengthNode == null ? null : lengthNode.getTextContent();
+                    if (length != null) {
+                        lengthMap.put(newFullName, length);
+                    }
                     boolean formula = getFirstElementsByTagName(field, "formula") != null;
                     if (type.equals("Text")) {
                         fieldNames.add(newFullName);
@@ -236,6 +242,7 @@ public class ForceCodegenMojo extends AbstractMojo {
                 vc.put("oldNamesMap", oldNamesMap);
                 vc.put("typeEnumMap", typeEnumMap);
                 vc.put("typeClassMap", typeClassMap);
+                vc.put("lengthMap", lengthMap);
                 vc.put("customSettings", customSettings);
                 merge("FieldsExt.java.vm", newObjectName + ".java", vc);
                 merge("FieldType.java.vm", "FieldType.java", vc);

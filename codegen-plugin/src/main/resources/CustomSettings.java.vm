@@ -10,7 +10,7 @@ public class CustomSettings extends Fields {
 
     public CustomSettings(Objects objects, String sfName) {
         super(objects, sfName);
-        this.setupOwnerId = new Field<String>(this, "setupOwnerId", "SetupOwnerId", FieldType.STRING, false);
+        this.setupOwnerId = new Field<String>(this, "setupOwnerId", "SetupOwnerId", FieldType.STRING, null, false);
         addField(setupOwnerId);
     }
 

@@ -14,13 +14,15 @@ public class Field<T> {
     private final String javaName;
     private final String sfName;
     private final FieldType type;
+    private final Integer length;
     private final boolean custom;
 
-    public Field(Fields fields, String javaName, String sfName, FieldType type, boolean custom) {
+    public Field(Fields fields, String javaName, String sfName, FieldType type, Integer length, boolean custom) {
         this.fields = fields;
         this.javaName = javaName;
         this.sfName = sfName;
         this.type = type;
+        this.length = length;
         this.custom = custom;
     }
 
@@ -38,6 +40,10 @@ public class Field<T> {
 
     public FieldType type() {
         return type;
+    }
+
+    public Integer length() {
+        return length;
     }
 
     @Override
@@ -112,6 +118,11 @@ public class Field<T> {
                     }
                 }
             }
+        } else if (type == FieldType.STRING) {
+            if (length != null) {
+                strValue = strValue.substring(0, Math.min(strValue.length(), length));
+            }
+            return strValue;
         } else {
             return value;
         }

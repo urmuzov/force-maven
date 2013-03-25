@@ -11,7 +11,7 @@ public class ${objectName} extends #if($customSettings.contains($objectName))Cus
     public ${objectName}(Objects objects) {
         super(objects, "$objectApiName");
 #foreach($fieldName in $fieldNames)
-        this.$fieldName = new Field<${typeClassMap.get(${fieldName})}>(this, "$fieldName", "$oldNamesMap.get($fieldName)", FieldType.${typeEnumMap.get(${fieldName})}, true);
+        this.$fieldName = new Field<${typeClassMap.get(${fieldName})}>(this, "$fieldName", "$oldNamesMap.get($fieldName)", FieldType.${typeEnumMap.get(${fieldName})}, #if ($lengthMap.containsKey($fieldName)) $lengthMap.get($fieldName) #else null #end, true);
         addField($fieldName);
 #end
     }
