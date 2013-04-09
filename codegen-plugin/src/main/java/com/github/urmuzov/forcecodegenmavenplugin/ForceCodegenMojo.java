@@ -126,8 +126,10 @@ public class ForceCodegenMojo extends AbstractMojo {
             vc.put("outputPackage", outputPackage);
 
             merge("Field.java.vm", "Field.java", vc);
+            merge("FieldType.java.vm", "FieldType.java", vc);
             merge("Fields.java.vm", "Fields.java", vc);
             merge("CustomSettings.java.vm", "CustomSettings.java", vc);
+            merge("StandardCase.java.vm", "StandardCase.java", vc);
 
             DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 
@@ -145,10 +147,6 @@ public class ForceCodegenMojo extends AbstractMojo {
                 vc.put("objectApiName", objectName);
                 objectNames.add(newObjectName);
                 Document document = builder.parse(objectFile);
-                List<String> customSettings = new ArrayList<String>();
-                if (!getElementsByTagName(document.getDocumentElement(), "customSettingsType").isEmpty()) {
-                    customSettings.add(newObjectName);
-                }
                 List<Node> fields = getElementsByTagName(document.getDocumentElement(), "fields");
                 List<String> fieldNames = new ArrayList<String>();
                 Map<String, String> oldNamesMap = new HashMap<String, String>();
@@ -243,9 +241,14 @@ public class ForceCodegenMojo extends AbstractMojo {
                 vc.put("typeEnumMap", typeEnumMap);
                 vc.put("typeClassMap", typeClassMap);
                 vc.put("lengthMap", lengthMap);
-                vc.put("customSettings", customSettings);
+                String superClass = "Fields";
+                if (!getElementsByTagName(document.getDocumentElement(), "customSettingsType").isEmpty()) {
+                    superClass = "CustomSettings";
+                } else if (objectName.equals("Case")) {
+                    superClass = "StandardCase";
+                }
+                vc.put("superClass", superClass);
                 merge("FieldsExt.java.vm", newObjectName + ".java", vc);
-                merge("FieldType.java.vm", "FieldType.java", vc);
             }
             vc.put("objectNames", objectNames);
             merge("Objects.java.vm", "Objects.java", vc);

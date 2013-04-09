@@ -1,0 +1,203 @@
+package ${outputPackage};
+
+import com.sforce.soap.partner.sobject.SObject;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
+
+public class StandardCase extends Fields {
+    private final Field<String> account;
+    private final Field<String> asset;
+    private final Field<String> businessHours;
+    private final Field<String> caseNumber;
+    private final Field<String> origin;
+    private final Field<String> owner;
+    private final Field<String> reason;
+    private final Field<Boolean> isClosedOnCreate;
+    private final Field<String> contactEmail;
+    private final Field<String> contactFax;
+    private final Field<String> contactMobile;
+    private final Field<String> contact;
+    private final Field<String> contactPhone;
+    private final Field<Calendar> closedDate;
+    private final Field<Calendar> createdDate;
+    private final Field<String> description;
+    private final Field<Boolean> isEscalated;
+    private final Field<String> comments;
+    private final Field<String> parent;
+    private final Field<String> priority;
+    private final Field<String> status;
+    private final Field<String> subject;
+    private final Field<String> type;
+    private final Field<String> suppliedCompany;
+    private final Field<String> suppliedEmail;
+    private final Field<String> suppliedName;
+    private final Field<String> suppliedPhone;
+
+    public StandardCase(Objects objects, String sfName) {
+        super(objects, sfName);
+        this.account = new Field<String>(this, "account", "Account", FieldType.STRING, null, false);
+        addField(account);
+        this.asset = new Field<String>(this, "asset", "Asset", FieldType.STRING, null, false);
+        addField(asset);
+        this.businessHours = new Field<String>(this, "businessHours", "BusinessHours", FieldType.STRING, null, false);
+        addField(businessHours);
+        this.caseNumber = new Field<String>(this, "caseNumber", "CaseNumber", FieldType.STRING, null, false);
+        addField(caseNumber);
+        this.origin = new Field<String>(this, "origin", "Origin", FieldType.STRING, null, false);
+        addField(origin);
+        this.owner = new Field<String>(this, "owner", "Owner", FieldType.STRING, null, false);
+        addField(owner);
+        this.reason = new Field<String>(this, "reason", "Reason", FieldType.STRING, null, false);
+        addField(reason);
+        this.isClosedOnCreate = new Field<Boolean>(this, "isClosedOnCreate", "IsClosedOnCreate", FieldType.BOOLEAN, null, false);
+        addField(isClosedOnCreate);
+        this.contactEmail = new Field<String>(this, "contactEmail", "ContactEmail", FieldType.STRING, null, false);
+        addField(contactEmail);
+        this.contactFax = new Field<String>(this, "contactFax", "ContactFax", FieldType.STRING, null, false);
+        addField(contactFax);
+        this.contactMobile = new Field<String>(this, "contactMobile", "ContactMobile", FieldType.STRING, null, false);
+        addField(contactMobile);
+        this.contact = new Field<String>(this, "contact", "Contact", FieldType.STRING, null, false);
+        addField(contact);
+        this.contactPhone = new Field<String>(this, "contactPhone", "ContactPhone", FieldType.STRING, null, false);
+        addField(contactPhone);
+        this.closedDate = new Field<Calendar>(this, "closedDate", "ClosedDate", FieldType.CALENDAR, null, false);
+        addField(closedDate);
+        this.createdDate = new Field<Calendar>(this, "createdDate", "CreatedDate", FieldType.CALENDAR, null, false);
+        addField(createdDate);
+        this.description = new Field<String>(this, "description", "Description", FieldType.STRING, 32000, false);
+        addField(description);
+        this.isEscalated = new Field<Boolean>(this, "isEscalated", "IsEscalated", FieldType.BOOLEAN, null, false);
+        addField(isEscalated);
+        this.comments = new Field<String>(this, "comments", "Comments", FieldType.STRING, 4000, false);
+        addField(comments);
+        this.parent = new Field<String>(this, "parent", "Parent", FieldType.STRING, null, false);
+        addField(parent);
+        this.priority = new Field<String>(this, "priority", "Priority", FieldType.STRING, null, false);
+        addField(priority);
+        this.status = new Field<String>(this, "status", "Status", FieldType.STRING, null, false);
+        addField(status);
+        this.subject = new Field<String>(this, "subject", "Subject", FieldType.STRING, 255, false);
+        addField(subject);
+        this.type = new Field<String>(this, "type", "Type", FieldType.STRING, null, false);
+        addField(type);
+        this.suppliedCompany = new Field<String>(this, "suppliedCompany", "SuppliedCompany", FieldType.STRING, 80, false);
+        addField(suppliedCompany);
+        this.suppliedEmail = new Field<String>(this, "suppliedEmail", "SuppliedEmail", FieldType.STRING, null, false);
+        addField(suppliedEmail);
+        this.suppliedName = new Field<String>(this, "suppliedName", "SuppliedName", FieldType.STRING, 80, false);
+        addField(suppliedName);
+        this.suppliedPhone = new Field<String>(this, "suppliedPhone", "SuppliedPhone", FieldType.STRING, 40, false);
+        addField(suppliedPhone);
+    }
+
+    public Field<Boolean> isEscalated() {
+        return isEscalated;
+    }
+
+    public Field<String> account() {
+        return account;
+    }
+
+    public Field<String> asset() {
+        return asset;
+    }
+
+    public Field<String> businessHours() {
+        return businessHours;
+    }
+
+    public Field<String> caseNumber() {
+        return caseNumber;
+    }
+
+    public Field<String> origin() {
+        return origin;
+    }
+
+    public Field<String> owner() {
+        return owner;
+    }
+
+    public Field<String> reason() {
+        return reason;
+    }
+
+    public Field<Boolean> isClosedOnCreate() {
+        return isClosedOnCreate;
+    }
+
+    public Field<String> contactEmail() {
+        return contactEmail;
+    }
+
+    public Field<String> contactFax() {
+        return contactFax;
+    }
+
+    public Field<String> contactMobile() {
+        return contactMobile;
+    }
+
+    public Field<String> contact() {
+        return contact;
+    }
+
+    public Field<String> contactPhone() {
+        return contactPhone;
+    }
+
+    public Field<Calendar> closedDate() {
+        return closedDate;
+    }
+
+    public Field<Calendar> createdDate() {
+        return createdDate;
+    }
+
+    public Field<String> description() {
+        return description;
+    }
+
+    public Field<String> comments() {
+        return comments;
+    }
+
+    public Field<String> parent() {
+        return parent;
+    }
+
+    public Field<String> priority() {
+        return priority;
+    }
+
+    public Field<String> status() {
+        return status;
+    }
+
+    public Field<String> subject() {
+        return subject;
+    }
+
+    public Field<String> type() {
+        return type;
+    }
+
+    public Field<String> suppliedCompany() {
+        return suppliedCompany;
+    }
+
+    public Field<String> suppliedEmail() {
+        return suppliedEmail;
+    }
+
+    public Field<String> suppliedName() {
+        return suppliedName;
+    }
+
+    public Field<String> suppliedPhone() {
+        return suppliedPhone;
+    }
+}
