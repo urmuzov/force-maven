@@ -129,6 +129,7 @@ public class ForceCodegenMojo extends AbstractMojo {
             merge("FieldType.java.vm", "FieldType.java", vc);
             merge("Fields.java.vm", "Fields.java", vc);
             merge("CustomSettings.java.vm", "CustomSettings.java", vc);
+            merge("CustomSettingsVisibility.java.vm", "CustomSettingsVisibility.java", vc);
             merge("StandardCase.java.vm", "StandardCase.java", vc);
 
             DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -241,14 +242,18 @@ public class ForceCodegenMojo extends AbstractMojo {
                 vc.put("typeEnumMap", typeEnumMap);
                 vc.put("typeClassMap", typeClassMap);
                 vc.put("lengthMap", lengthMap);
-                String superClass = "Fields";
                 if (!getElementsByTagName(document.getDocumentElement(), "customSettingsType").isEmpty()) {
-                    superClass = "CustomSettings";
-                } else if (objectName.equals("Case")) {
-                    superClass = "StandardCase";
+                    Node visibility = getFirstElementsByTagName(document.getDocumentElement(), "customSettingsVisibility");
+                    vc.put("visibility", visibility != null && visibility.getTextContent().equals("Protected") ? "PROTECTED" : "PUBLIC");
+                    merge("CustomSettingsExt.java.vm", newObjectName + ".java", vc);
+                } else {
+                    String superClass = "Fields";
+                    if (objectName.equals("Case")) {
+                        superClass = "StandardCase";
+                    }
+                    vc.put("superClass", superClass);
+                    merge("FieldsExt.java.vm", newObjectName + ".java", vc);
                 }
-                vc.put("superClass", superClass);
-                merge("FieldsExt.java.vm", newObjectName + ".java", vc);
             }
             vc.put("objectNames", objectNames);
             merge("Objects.java.vm", "Objects.java", vc);

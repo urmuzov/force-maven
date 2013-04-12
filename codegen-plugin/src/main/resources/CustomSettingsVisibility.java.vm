@@ -1,0 +1,6 @@
+package ${outputPackage};
+
+public enum CustomSettingsVisibility {
+    PUBLIC,
+    PROTECTED,
+}

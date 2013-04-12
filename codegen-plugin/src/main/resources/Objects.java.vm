@@ -17,9 +17,18 @@ public class Objects {
     public Objects(String namespace) {
         this.namespace = namespace;
 #foreach($objectName in $objectNames)
-        this.$objectName = new $objectName(this);
-        this.byApiName.put(this.${objectName}.apiName(), this.$objectName);
+        this.$objectName = add(new $objectName(this));
 #end
+    }
+
+    private <T extends Fields> T add(T object) {
+        if (object instanceof CustomSettings) {
+            if (((CustomSettings) object).visibility() == CustomSettingsVisibility.PROTECTED) {
+                return object;
+            }
+        }
+        this.byApiName.put(object.apiName(), object);
+        return object;
     }
 
     public String select(Collection<Field> fields) {

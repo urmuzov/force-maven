@@ -34,7 +34,8 @@
     </actionOverrides>
     <deploymentStatus>Deployed</deploymentStatus>
     <enableActivities>false</enableActivities>
-    <enableFeeds>false</enableFeeds>
+    <enableEnhancedLookup>false</enableEnhancedLookup>
+    <enableFeeds>true</enableFeeds>
     <enableHistory>false</enableHistory>
     <enableReports>false</enableReports>
     <fields>
@@ -43,17 +44,21 @@
         <label>Value</label>
         <length>255</length>
         <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
         <type>Text</type>
         <unique>false</unique>
     </fields>
     <label>CloudAware Property</label>
     <listViews>
         <fullName>All</fullName>
+        <columns>NAME</columns>
+        <columns>value__c</columns>
         <filterScope>Everything</filterScope>
         <label>All</label>
     </listViews>
     <nameField>
         <label>Name</label>
+        <trackFeedHistory>false</trackFeedHistory>
         <type>Text</type>
     </nameField>
     <pluralLabel>CloudAware Properties</pluralLabel>
