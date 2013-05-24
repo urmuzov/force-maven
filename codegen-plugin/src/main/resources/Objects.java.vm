@@ -10,12 +10,15 @@ public class Objects {
     private final String namespace;
     private Map<String, Fields> byApiName = new HashMap<String, Fields>();
 
+    private final RecordType RecordType;
+
 #foreach($objectName in $objectNames)
     private final $objectName $objectName;
 #end
 
     public Objects(String namespace) {
         this.namespace = namespace;
+        this.RecordType = add(new RecordType(this));
 #foreach($objectName in $objectNames)
         this.$objectName = add(new $objectName(this));
 #end
@@ -72,6 +75,10 @@ public class Objects {
 
     public Fields byApiName(String apiName) {
         return byApiName.get(apiName);
+    }
+
+    public RecordType RecordType() {
+        return this.RecordType;
     }
 
 #foreach($objectName in $objectNames)

@@ -131,6 +131,7 @@ public class ForceCodegenMojo extends AbstractMojo {
             merge("CustomSettings.java.vm", "CustomSettings.java", vc);
             merge("CustomSettingsVisibility.java.vm", "CustomSettingsVisibility.java", vc);
             merge("StandardCase.java.vm", "StandardCase.java", vc);
+            merge("RecordType.java.vm", "RecordType.java", vc);
 
             DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 

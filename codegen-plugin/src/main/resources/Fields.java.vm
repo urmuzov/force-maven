@@ -54,6 +54,10 @@ public class Fields {
         return bySfName.get(sfName);
     }
 
+    public Objects objects() {
+        return this.objects;
+    }
+
     public String withNamespace(String name) {
         return objects.withNamespace(name);
     }

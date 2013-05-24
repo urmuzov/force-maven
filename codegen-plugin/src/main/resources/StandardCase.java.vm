@@ -34,6 +34,7 @@ public class StandardCase extends Fields {
     private final Field<String> suppliedEmail;
     private final Field<String> suppliedName;
     private final Field<String> suppliedPhone;
+    private final Field<String> recordTypeId;
 
     public StandardCase(Objects objects, String sfName) {
         super(objects, sfName);
@@ -91,6 +92,8 @@ public class StandardCase extends Fields {
         addField(suppliedName);
         this.suppliedPhone = new Field<String>(this, "suppliedPhone", "SuppliedPhone", FieldType.STRING, 40, false);
         addField(suppliedPhone);
+        this.recordTypeId = new Field<String>(this, "recordTypeId", "RecordTypeId", FieldType.STRING, null, false);
+        addField(recordTypeId);
     }
 
     public Field<Boolean> isEscalated() {
@@ -199,5 +202,9 @@ public class StandardCase extends Fields {
 
     public Field<String> suppliedPhone() {
         return suppliedPhone;
+    }
+
+    public Field<String> recordTypeId() {
+        return recordTypeId;
     }
 }
