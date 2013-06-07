@@ -1,0 +1,6 @@
+package ${outputPackage};
+
+public enum FieldReferenceType {
+    MASTER_DETAIL,
+    LOOKUP
+}

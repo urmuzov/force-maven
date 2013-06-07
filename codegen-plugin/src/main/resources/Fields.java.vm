@@ -7,11 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
-public class Fields {
+public abstract class Fields {
     private final Objects objects;
     private final String sfName;
     private final boolean custom;
     private final List<Field> allFields = new ArrayList<Field>();
+    private final List<Field> selfFields = new ArrayList<Field>();
     private final Map<String, Field> byApiName = new HashMap<String, Field>();
     private final Map<String, Field> bySfName = new HashMap<String, Field>();
     private final Field<String> id;
@@ -25,25 +26,23 @@ public class Fields {
         this.sfName = sfName;
         this.custom = sfName.endsWith("__c");
         this.id = new Field<String>(this, "id", "Id", FieldType.STRING, null, false);
-        addField(id);
+        addField(id, false);
         this.name = new Field<String>(this, "name", "Name", FieldType.STRING, 80, false);
-        addField(name);
+        addField(name, false);
         this.owner = new Field<String>(this, "owner", "Owner", FieldType.STRING, null, false);
-        addField(owner);
+        addField(owner, false);
         this.createdBy = new Field<String>(this, "createdBy", "CreatedBy", FieldType.STRING, null, false);
-        addField(createdBy);
+        addField(createdBy, false);
         this.lastModifiedBy = new Field<String>(this, "lastModifiedBy", "LastModifiedBy", FieldType.STRING, null, false);
-        addField(lastModifiedBy);
-    }
-
-    protected void addField(Field field) {
-        allFields.add(field);
-        byApiName.put(field.apiName(), field);
-        bySfName.put(field.sfName(), field);
+        addField(lastModifiedBy, false);
     }
 
     public List<Field> allFields() {
         return Collections.unmodifiableList(allFields);
+    }
+
+    public List<Field> selfFields() {
+        return Collections.unmodifiableList(selfFields);
     }
 
     public Field byApiName(String apiName) {
@@ -60,6 +59,10 @@ public class Fields {
 
     public String withNamespace(String name) {
         return objects.withNamespace(name);
+    }
+
+    public boolean custom() {
+        return custom;
     }
 
     public String apiName() {
@@ -98,5 +101,23 @@ public class Fields {
 
     public Field<String> lastModifiedBy() {
         return lastModifiedBy;
+    }
+
+    public NameFieldType nameFieldType() {
+        return NameFieldType.UNKNOWN;
+    }
+
+    protected void addField(Field field) {
+        addField(field, true);
+    }
+
+    private void addField(Field field, boolean selfField) {
+        allFields.add(field);
+        byApiName.put(field.apiName(), field);
+        bySfName.put(field.sfName(), field);
+
+        if (selfField) {
+            selfFields.add(field);
+        }
     }
 }

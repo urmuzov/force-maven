@@ -1,0 +1,26 @@
+package ${outputPackage};
+
+public class FieldReference {
+
+    private final Class toClass;
+    private final FieldReferenceType type;
+    private final DeleteConstrain deleteConstrain;
+
+    public FieldReference(Class toClass, FieldReferenceType type, DeleteConstrain deleteConstrain) {
+        this.toClass = toClass;
+        this.type = type;
+        this.deleteConstrain = deleteConstrain;
+    }
+
+    public Class toClass() {
+        return this.toClass;
+    }
+
+    public FieldReferenceType type() {
+        return this.type;
+    }
+
+    public DeleteConstrain deleteConstrain() {
+        return this.deleteConstrain;
+    }
+}

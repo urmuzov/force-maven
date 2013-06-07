@@ -1,29 +1,39 @@
 package ${outputPackage};
 
-import java.text.DateFormat;
-import java.text.ParseException;
+import java.util.*;
 import java.util.Calendar;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+
 import com.sforce.soap.partner.sobject.SObject;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 public class Field<T> {
+    private static Map<String, Class> objectClassesMap;
+
     private final Fields fields;
     private final String javaName;
     private final String sfName;
     private final FieldType type;
     private final Integer length;
     private final boolean custom;
+    private final FieldReference reference;
 
     public Field(Fields fields, String javaName, String sfName, FieldType type, Integer length, boolean custom) {
+        this(fields, javaName, sfName, type, length, custom, null);
+    }
+
+    public Field(Fields fields, String javaName, String sfName, FieldType type, Integer length, boolean custom, FieldReference reference) {
         this.fields = fields;
         this.javaName = javaName;
         this.sfName = sfName;
         this.type = type;
         this.length = length;
         this.custom = custom;
+        this.reference = reference;
+    }
+
+    public FieldReference reference() {
+        return this.reference;
     }
 
     public String javaName() {
@@ -93,11 +103,11 @@ public class Field<T> {
             if (value instanceof Calendar) {
                 return value;
             } else if (value instanceof Number) {
-                GregorianCalendar cal = new GregorianCalendar();
+                GregorianCalendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
                 cal.setTimeInMillis(((Number) value).longValue());
                 return cal;
             } else if (value instanceof Date) {
-                GregorianCalendar cal = new GregorianCalendar();
+                GregorianCalendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
                 cal.setTime((Date) value);
                 return cal;
             } else if (value instanceof DateTime) {
@@ -105,13 +115,12 @@ public class Field<T> {
             } else {
                 try {
                     long millis = Long.parseLong(strValue);
-                    GregorianCalendar cal = new GregorianCalendar();
+                    GregorianCalendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
                     cal.setTimeInMillis(millis);
                     return cal;
                 } catch (NumberFormatException ex) {
                     try {
-                        DateTime dt = DateTime.parse(strValue);
-                        return dt.toGregorianCalendar();
+                        return DateTime.parse(strValue).toDateTime(DateTimeZone.UTC).toGregorianCalendar();
                     } catch (Exception ex2) {
                         // we tried but can't parse it
                         return value;

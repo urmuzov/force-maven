@@ -1,9 +1,8 @@
 package ${outputPackage};
 
-import java.util.Collection;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.HashMap;
+import com.google.common.collect.Lists;
+
+import java.util.*;
 
 public class Objects {
 
@@ -71,6 +70,17 @@ public class Objects {
 
     public Collection<Fields> allFields() {
         return byApiName.values();
+    }
+
+    public Collection<Fields> customFields() {
+        List<Fields> result = Lists.newArrayList();
+        for (Fields objectMeta : allFields()) {
+            if (objectMeta.custom()) {
+                result.add(objectMeta);
+            }
+        }
+
+        return Collections.unmodifiableList(result);
     }
 
     public Fields byApiName(String apiName) {

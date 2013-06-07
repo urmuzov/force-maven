@@ -1,0 +1,7 @@
+package ${outputPackage};
+
+public enum NameFieldType {
+    TEXT,
+    AUTO_NUMBER,
+    UNKNOWN
+}

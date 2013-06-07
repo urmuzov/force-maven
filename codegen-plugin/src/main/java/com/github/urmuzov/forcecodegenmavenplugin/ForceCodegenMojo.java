@@ -126,12 +126,16 @@ public class ForceCodegenMojo extends AbstractMojo {
             vc.put("outputPackage", outputPackage);
 
             merge("Field.java.vm", "Field.java", vc);
+            merge("NameFieldType.java.vm", "NameFieldType.java", vc);
             merge("FieldType.java.vm", "FieldType.java", vc);
             merge("Fields.java.vm", "Fields.java", vc);
             merge("CustomSettings.java.vm", "CustomSettings.java", vc);
             merge("CustomSettingsVisibility.java.vm", "CustomSettingsVisibility.java", vc);
             merge("StandardCase.java.vm", "StandardCase.java", vc);
             merge("RecordType.java.vm", "RecordType.java", vc);
+            merge("FieldReference.java.vm", "FieldReference.java", vc);
+            merge("FieldReferenceType.java.vm", "FieldReferenceType.java", vc);
+            merge("DeleteConstrain.java.vm", "DeleteConstrain.java", vc);
 
             DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 
@@ -155,6 +159,9 @@ public class ForceCodegenMojo extends AbstractMojo {
                 Map<String, String> typeEnumMap = new HashMap<String, String>();
                 Map<String, String> typeClassMap = new HashMap<String, String>();
                 Map<String, String> lengthMap = new HashMap<String, String>();
+                Map<String, String> referenceMap = new HashMap<String, String>();
+                Map<String, String> referenceTypeMap = new HashMap<String, String>();
+                Map<String, String> deleteConstrainMap = new HashMap<String, String>();
                 for (Node field : fields) {
                     Node fullNameNode = getFirstElementsByTagName(field, "fullName");
                     if (fullNameNode == null) {
@@ -177,6 +184,25 @@ public class ForceCodegenMojo extends AbstractMojo {
                         lengthMap.put(newFullName, length);
                     }
                     boolean formula = getFirstElementsByTagName(field, "formula") != null;
+
+                    Node deleteConstraintNode = getFirstElementsByTagName(field, "deleteConstraint");
+                    String deleteConstraintName = null;
+                    if (deleteConstraintNode != null) {
+                        String deleteConstraint = deleteConstraintNode.getTextContent();
+                        if (deleteConstraint != null && deleteConstraint.trim().length() > 0) {
+                            deleteConstraintName = deleteConstraint;
+                        }
+                    }
+
+                    Node referenceToNode = getFirstElementsByTagName(field, "referenceTo");
+                    String referenceToClassName = null;
+                    if (referenceToNode != null) {
+                        String referenceTo = referenceToNode.getTextContent();
+                        if (referenceTo != null && referenceTo.trim().length() > 0) {
+                            referenceToClassName = convertObjectName(referenceTo) + ".class";
+                        }
+                    }
+
                     if (type.equals("Text")) {
                         fieldNames.add(newFullName);
                         typeEnumMap.put(newFullName, "STRING");
@@ -189,14 +215,37 @@ public class ForceCodegenMojo extends AbstractMojo {
                         fieldNames.add(newFullName);
                         typeEnumMap.put(newFullName, "DOUBLE");
                         typeClassMap.put(newFullName, "Double");
-                    } else if (type.equals("MasterDetail")) {
+                    } else if (type.equals("MasterDetail") || type.equals("Lookup")) {
+                        if (referenceToClassName == null) {
+                            throw new MojoExecutionException("Parsing error: referenceTo is not defined for field (" + fullName + ") for (" + objectName + ")");
+                        }
+
+                        if (type.equals("MasterDetail")) {
+                            deleteConstrainMap.put(newFullName, "RESTRICT");
+                        } else {
+                            if (deleteConstraintName == null) {
+                                throw new MojoExecutionException("Parsing error: deleteConstraint is not defined for field (" + fullName + ") for (" + objectName + ")");
+                            }
+
+                            if (deleteConstraintName.equals("Restrict")) {
+                                deleteConstrainMap.put(newFullName, "RESTRICT");
+                            } else if (deleteConstraintName.equals("SetNull")) {
+                                deleteConstrainMap.put(newFullName, "SET_NULL");
+                            } else {
+                                throw new MojoExecutionException("Parsing error: deleteConstraint (" + deleteConstraintName + ") for field (" + fullName + ") for (" + objectName + ")");
+                            }
+                        }
+
+                        if (type.equals("MasterDetail")) {
+                            referenceTypeMap.put(newFullName, "MASTER_DETAIL");
+                        } else {
+                            referenceTypeMap.put(newFullName, "LOOKUP");
+                        }
+
                         fieldNames.add(newFullName);
                         typeEnumMap.put(newFullName, "STRING");
                         typeClassMap.put(newFullName, "String");
-                    } else if (type.equals("Lookup")) {
-                        fieldNames.add(newFullName);
-                        typeEnumMap.put(newFullName, "STRING");
-                        typeClassMap.put(newFullName, "String");
+                        referenceMap.put(newFullName, referenceToClassName);
                     } else if (type.equals("Checkbox")) {
                         fieldNames.add(newFullName);
                         typeEnumMap.put(newFullName, "BOOLEAN");
@@ -238,11 +287,39 @@ public class ForceCodegenMojo extends AbstractMojo {
                         typeEnumMap.put(newFullName, "FORMULA");
                     }
                 }
+
+                // Предполагается, что у всех наших объектов есть поле Name...
+                String nameFieldType = "UNKNOWN";
+                Node nameFieldNode = getFirstElementsByTagName(document.getDocumentElement(), "nameField");
+
+                if (nameFieldNode == null) {
+                    // ...но, блядь, у стандартных объектов (таких как Case) его нет...
+                    if (objectName.endsWith("__с")) {
+                        throw new MojoExecutionException("Parsing error: field nameField not found for (" + objectName + ")");
+                    }
+                }
+
+                if (nameFieldNode != null) {
+                    String nameFieldTypeText = getFirstElementsByTagName(nameFieldNode, "type").getTextContent().trim();
+                    if (nameFieldTypeText.equals("Text")) {
+                        nameFieldType = "TEXT";
+                    } else if (nameFieldTypeText.equals("AutoNumber")) {
+                        nameFieldType = "AUTO_NUMBER";
+                    } else {
+                        throw new MojoExecutionException("Parsing error: Unknown name field type (" + nameFieldTypeText + ") for (" + objectName + ")");
+                    }
+                }
+
                 vc.put("fieldNames", fieldNames);
                 vc.put("oldNamesMap", oldNamesMap);
                 vc.put("typeEnumMap", typeEnumMap);
                 vc.put("typeClassMap", typeClassMap);
+                vc.put("referenceMap", referenceMap);
+                vc.put("referenceTypeMap", referenceTypeMap);
+                vc.put("deleteConstrainMap", deleteConstrainMap);
                 vc.put("lengthMap", lengthMap);
+                vc.put("nameFieldType", nameFieldType);
+
                 if (!getElementsByTagName(document.getDocumentElement(), "customSettingsType").isEmpty()) {
                     Node visibility = getFirstElementsByTagName(document.getDocumentElement(), "customSettingsVisibility");
                     vc.put("visibility", visibility != null && visibility.getTextContent().equals("Protected") ? "PROTECTED" : "PUBLIC");
