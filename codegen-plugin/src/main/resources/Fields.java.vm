@@ -8,20 +8,20 @@ import java.util.Map;
 import java.util.HashMap;
 
 public abstract class Fields {
-    private final Objects objects;
-    private final String sfName;
-    private final boolean custom;
-    private final List<Field> allFields = new ArrayList<Field>();
-    private final List<Field> selfFields = new ArrayList<Field>();
-    private final Map<String, Field> byApiName = new HashMap<String, Field>();
-    private final Map<String, Field> bySfName = new HashMap<String, Field>();
-    private final Field<String> id;
-    private final Field<String> name;
-    private final Field<String> owner;
-    private final Field<String> createdBy;
-    private final Field<String> lastModifiedBy;
+    private Objects objects;
+    private String sfName;
+    private boolean custom;
+    private List<Field> allFields = new ArrayList<Field>();
+    private List<Field> selfFields = new ArrayList<Field>();
+    private Map<String, Field> byApiName = new HashMap<String, Field>();
+    private Map<String, Field> bySfName = new HashMap<String, Field>();
+    private Field<String> id;
+    private Field<String> name;
+    private Field<String> owner;
+    private Field<String> createdBy;
+    private Field<String> lastModifiedBy;
 
-    public Fields(Objects objects, String sfName) {
+    public void init(Objects objects, String sfName) {
         this.objects = objects;
         this.sfName = sfName;
         this.custom = sfName.endsWith("__c");

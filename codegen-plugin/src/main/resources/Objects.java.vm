@@ -17,20 +17,31 @@ public class Objects {
 
     public Objects(String namespace) {
         this.namespace = namespace;
-        this.RecordType = add(new RecordType(this));
+        this.RecordType = new RecordType();
+        this.RecordType.init(this);
+        add(this.RecordType);
+
 #foreach($objectName in $objectNames)
-        this.$objectName = add(new $objectName(this));
+        this.$objectName = new $objectName();
+#end
+
+#foreach($objectName in $objectNames)
+        this.${objectName}.init(this);
+#end
+
+#foreach($objectName in $objectNames)
+        add(this.${objectName});
 #end
     }
 
-    private <T extends Fields> T add(T object) {
+    private <T extends Fields> void add(T object) {
         if (object instanceof CustomSettings) {
             if (((CustomSettings) object).visibility() == CustomSettingsVisibility.PROTECTED) {
-                return object;
+                return;
             }
         }
+
         this.byApiName.put(object.apiName(), object);
-        return object;
     }
 
     public String select(Collection<Field> fields) {

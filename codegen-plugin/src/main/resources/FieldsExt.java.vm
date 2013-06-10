@@ -5,12 +5,12 @@ import java.util.Calendar;
 public class $objectName extends $superClass {
 
 #foreach($fieldName in $fieldNames)
-    private final Field<${typeClassMap.get(${fieldName})}> $fieldName;
+    private Field<${typeClassMap.get(${fieldName})}> $fieldName;
 #end
-    private final NameFieldType nameFieldType;
+    private NameFieldType nameFieldType;
 
-    public ${objectName}(Objects objects) {
-        super(objects, "$objectApiName");
+    public void init(Objects objects) {
+        super.init(objects, "$objectApiName");
 #foreach($fieldName in $fieldNames)
         this.$fieldName = new Field<${typeClassMap.get(${fieldName})}>(this, "$fieldName", "$oldNamesMap.get($fieldName)", FieldType.${typeEnumMap.get(${fieldName})},#if ($lengthMap.containsKey($fieldName)) $lengthMap.get($fieldName) #else null#end, true,#if ($referenceMap.containsKey($fieldName)) new FieldReference(objects.$referenceMap.get($fieldName)(), FieldReferenceType.$referenceTypeMap.get($fieldName), DeleteConstrain.$deleteConstrainMap.get($fieldName))#else null#end);
         addField($fieldName);

@@ -5,11 +5,11 @@ import java.util.Calendar;
 public class $objectName extends CustomSettings {
 
 #foreach($fieldName in $fieldNames)
-    private final Field<${typeClassMap.get(${fieldName})}> $fieldName;
+    private Field<${typeClassMap.get(${fieldName})}> $fieldName;
 #end
 
-    public ${objectName}(Objects objects) {
-        super(objects, "$objectApiName", CustomSettingsVisibility.$visibility);
+    public void init(Objects objects) {
+        super.init(objects, "$objectApiName", CustomSettingsVisibility.$visibility);
 #foreach($fieldName in $fieldNames)
         this.$fieldName = new Field<${typeClassMap.get(${fieldName})}>(this, "$fieldName", "$oldNamesMap.get($fieldName)", FieldType.${typeEnumMap.get(${fieldName})}, #if ($lengthMap.containsKey($fieldName)) $lengthMap.get($fieldName) #else null #end, true);
         addField($fieldName);

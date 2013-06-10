@@ -7,16 +7,16 @@ import java.util.Collections;
 import java.util.List;
 
 public class RecordType extends Fields {
-    private final Field<String> businessProcessId;
-    private final Field<String> description;
-    private final Field<String> developerName;
-    private final Field<Boolean> isActive;
-    private final Field<String> namespacePrefix;
-    private final Field<String> sObjectType;
-    private final Field<Calendar> systemModstamp;
+    private Field<String> businessProcessId;
+    private Field<String> description;
+    private Field<String> developerName;
+    private Field<Boolean> isActive;
+    private Field<String> namespacePrefix;
+    private Field<String> sObjectType;
+    private Field<Calendar> systemModstamp;
 
-    public RecordType(Objects objects) {
-        super(objects, "RecordType");
+    public void init(Objects objects) {
+        super.init(objects, "RecordType");
         this.businessProcessId = new Field<String>(this, "businessProcessId", "BusinessProcessId", FieldType.STRING, null, false);
         addField(businessProcessId);
         this.description = new Field<String>(this, "description", "Description", FieldType.STRING, null, false);

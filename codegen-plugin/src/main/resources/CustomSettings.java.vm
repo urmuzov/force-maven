@@ -6,11 +6,11 @@ import java.util.Collections;
 import java.util.List;
 
 public class CustomSettings extends Fields {
-    private final CustomSettingsVisibility visibility;
-    private final Field<String> setupOwnerId;
+    private CustomSettingsVisibility visibility;
+    private Field<String> setupOwnerId;
 
-    public CustomSettings(Objects objects, String sfName, CustomSettingsVisibility visibility) {
-        super(objects, sfName);
+    public void init(Objects objects, String sfName, CustomSettingsVisibility visibility) {
+        super.init(objects, sfName);
         this.visibility = visibility;
         this.setupOwnerId = new Field<String>(this, "setupOwnerId", "SetupOwnerId", FieldType.STRING, null, false);
         addField(setupOwnerId);
