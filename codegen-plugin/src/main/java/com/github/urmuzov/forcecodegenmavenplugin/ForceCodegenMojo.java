@@ -195,11 +195,11 @@ public class ForceCodegenMojo extends AbstractMojo {
                     }
 
                     Node referenceToNode = getFirstElementsByTagName(field, "referenceTo");
-                    String referenceToClassName = null;
+                    String referenceTo = null;
                     if (referenceToNode != null) {
-                        String referenceTo = referenceToNode.getTextContent();
-                        if (referenceTo != null && referenceTo.trim().length() > 0) {
-                            referenceToClassName = convertObjectName(referenceTo) + ".class";
+                        String referenceToContent = referenceToNode.getTextContent().trim();
+                        if (referenceToContent.length() > 0) {
+                            referenceTo = convertObjectName(referenceToContent);
                         }
                     }
 
@@ -216,7 +216,7 @@ public class ForceCodegenMojo extends AbstractMojo {
                         typeEnumMap.put(newFullName, "DOUBLE");
                         typeClassMap.put(newFullName, "Double");
                     } else if (type.equals("MasterDetail") || type.equals("Lookup")) {
-                        if (referenceToClassName == null) {
+                        if (referenceTo == null) {
                             throw new MojoExecutionException("Parsing error: referenceTo is not defined for field (" + fullName + ") for (" + objectName + ")");
                         }
 
@@ -245,7 +245,7 @@ public class ForceCodegenMojo extends AbstractMojo {
                         fieldNames.add(newFullName);
                         typeEnumMap.put(newFullName, "STRING");
                         typeClassMap.put(newFullName, "String");
-                        referenceMap.put(newFullName, referenceToClassName);
+                        referenceMap.put(newFullName, referenceTo);
                     } else if (type.equals("Checkbox")) {
                         fieldNames.add(newFullName);
                         typeEnumMap.put(newFullName, "BOOLEAN");

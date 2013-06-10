@@ -12,7 +12,7 @@ public class $objectName extends $superClass {
     public ${objectName}(Objects objects) {
         super(objects, "$objectApiName");
 #foreach($fieldName in $fieldNames)
-        this.$fieldName = new Field<${typeClassMap.get(${fieldName})}>(this, "$fieldName", "$oldNamesMap.get($fieldName)", FieldType.${typeEnumMap.get(${fieldName})},#if ($lengthMap.containsKey($fieldName)) $lengthMap.get($fieldName) #else null#end, true,#if ($referenceMap.containsKey($fieldName)) new FieldReference($referenceMap.get($fieldName), FieldReferenceType.$referenceTypeMap.get($fieldName), DeleteConstrain.$deleteConstrainMap.get($fieldName))#else null#end);
+        this.$fieldName = new Field<${typeClassMap.get(${fieldName})}>(this, "$fieldName", "$oldNamesMap.get($fieldName)", FieldType.${typeEnumMap.get(${fieldName})},#if ($lengthMap.containsKey($fieldName)) $lengthMap.get($fieldName) #else null#end, true,#if ($referenceMap.containsKey($fieldName)) new FieldReference(objects.$referenceMap.get($fieldName)(), FieldReferenceType.$referenceTypeMap.get($fieldName), DeleteConstrain.$deleteConstrainMap.get($fieldName))#else null#end);
         addField($fieldName);
 #end
         this.nameFieldType = NameFieldType.${nameFieldType};
