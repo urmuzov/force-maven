@@ -101,26 +101,19 @@ public class Field<T> {
             return value instanceof Boolean ? value : Boolean.valueOf(strValue);
         } else if (type == FieldType.CALENDAR) {
             if (value instanceof Calendar) {
-                return value;
+                return convertToUtc(new DateTime(((Calendar)value).getTimeInMillis())).toGregorianCalendar();
             } else if (value instanceof Number) {
-                GregorianCalendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-                cal.setTimeInMillis(((Number) value).longValue());
-                return cal;
+                return convertToUtc(new DateTime(((Number)value).longValue())).toGregorianCalendar();
             } else if (value instanceof Date) {
-                GregorianCalendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-                cal.setTime((Date) value);
-                return cal;
+                return convertToUtc(new DateTime(((Date)value).getTime())).toGregorianCalendar();
             } else if (value instanceof DateTime) {
-                return ((DateTime) value).toGregorianCalendar();
+                return convertToUtc((DateTime)value).toGregorianCalendar();
             } else {
                 try {
-                    long millis = Long.parseLong(strValue);
-                    GregorianCalendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-                    cal.setTimeInMillis(millis);
-                    return cal;
+                    return convertToUtc(new DateTime(Long.parseLong(strValue))).toGregorianCalendar();
                 } catch (NumberFormatException ex) {
                     try {
-                        return DateTime.parse(strValue).toDateTime(DateTimeZone.UTC).toGregorianCalendar();
+                        return convertToUtc(DateTime.parse(strValue)).toGregorianCalendar();
                     } catch (Exception ex2) {
                         // we tried but can't parse it
                         return value;
@@ -135,5 +128,9 @@ public class Field<T> {
         } else {
             return value;
         }
+    }
+
+    private DateTime convertToUtc(DateTime dt) {
+        return dt.withZone(DateTimeZone.UTC).plusMillis(dt.getZone().getOffset(dt));
     }
 }
