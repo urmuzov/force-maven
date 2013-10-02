@@ -140,6 +140,8 @@ public class ForceCodegenMojo extends AbstractMojo {
             DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 
             List<String> objectNames = new ArrayList<String>();
+            merge("CaseComment.java.vm", "CaseComment.java", vc);
+            objectNames.add("CaseComment");
             for (File objectFile : objectsDir.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {

@@ -1,0 +1,77 @@
+package ${outputPackage};
+
+import com.sforce.soap.partner.sobject.SObject;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
+
+public class CaseComment extends Fields {
+    private Field<String> commentBody;
+    private Field<String> connectionReceivedId;
+    private Field<String> connectionSentId;
+    private Field<String> creatorFullPhotoUrl;
+    private Field<String> creatorName;
+    private Field<String> creatorSmallPhotoUrl;
+    private Field<Boolean> isDeleted;
+    private Field<Boolean> isPublished;
+    private Field<String> parentId;
+
+    public void init(Objects objects) {
+        super.init(objects, "CaseComment");
+        this.commentBody = new Field<String>(this, "commentBody", "CommentBody", FieldType.STRING, 4000, false);
+        addField(commentBody);
+        this.connectionReceivedId = new Field<String>(this, "connectionReceivedId", "ConnectionReceivedId", FieldType.STRING, null, false);
+        addField(connectionReceivedId);
+        this.connectionSentId = new Field<String>(this, "connectionSentId", "ConnectionSentId", FieldType.STRING, null, false);
+        addField(connectionSentId);
+        this.creatorFullPhotoUrl = new Field<String>(this, "creatorFullPhotoUrl", "CreatorFullPhotoUrl", FieldType.STRING, null, false);
+        addField(creatorFullPhotoUrl);
+        this.creatorName = new Field<String>(this, "creatorName", "CreatorName", FieldType.STRING, null, false);
+        addField(creatorName);
+        this.creatorSmallPhotoUrl = new Field<String>(this, "creatorSmallPhotoUrl", "CreatorSmallPhotoUrl", FieldType.STRING, null, false);
+        addField(creatorSmallPhotoUrl);
+        this.isDeleted = new Field<Boolean>(this, "isDeleted", "IsDeleted", FieldType.BOOLEAN, null, false);
+        addField(isDeleted);
+        this.isPublished = new Field<Boolean>(this, "isPublished", "IsPublished", FieldType.BOOLEAN, null, false);
+        addField(isPublished);
+        this.parentId = new Field<String>(this, "parentId", "ParentId", FieldType.STRING, null, false);
+        addField(parentId);
+    }
+
+    public Field<String> commentBody() {
+        return commentBody;
+    }
+
+    public Field<String> connectionReceivedId() {
+        return connectionReceivedId;
+    }
+
+    public Field<String> connectionSentId() {
+        return connectionSentId;
+    }
+
+    public Field<String> creatorFullPhotoUrl() {
+        return creatorFullPhotoUrl;
+    }
+
+    public Field<String> creatorName() {
+        return creatorName;
+    }
+
+    public Field<String> creatorSmallPhotoUrl() {
+        return creatorSmallPhotoUrl;
+    }
+
+    public Field<Boolean> isDeleted() {
+        return isDeleted;
+    }
+
+    public Field<Boolean> isPublished() {
+        return isPublished;
+    }
+
+    public Field<String> parentId() {
+        return parentId;
+    }
+}
