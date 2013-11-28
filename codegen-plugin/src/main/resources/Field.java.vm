@@ -6,6 +6,7 @@ import java.util.Calendar;
 import com.sforce.soap.partner.sobject.SObject;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import java.util.GregorianCalendar;
 
 public class Field<T> {
     private static Map<String, Class> objectClassesMap;
@@ -78,6 +79,21 @@ public class Field<T> {
         return (T) objValue;
     }
 
+    public String stringValueFrom(SObject sObject) {
+        Object objValue = sObject.getField(apiName());
+        if (objValue == null) {
+            return null;
+        }
+        String strValue = objValue.toString();
+        if (type == FieldType.DOUBLE) {
+            return Double.valueOf(strValue).toString();
+        } else if (type == FieldType.BOOLEAN) {
+            return Boolean.valueOf(strValue).toString();
+        } else if (type == FieldType.CALENDAR) {
+            return Long.toString(((GregorianCalendar) objValue).getTimeInMillis());
+        }
+        return strValue;
+    }
 
     public void valueTo(SObject sObject, Object value) {
         sObject.setField(apiName(), convertValue(value));
