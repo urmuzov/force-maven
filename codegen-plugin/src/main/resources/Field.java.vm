@@ -104,13 +104,14 @@ public class Field<T> {
                 nullFields.add(apiName);
                 setFieldsToNull(sObject, nullFields);
             }
+            sObject.removeField(apiName);
         } else {
             if (nullFields.contains(apiName)) {
                 nullFields.remove(apiName);
                 setFieldsToNull(sObject, nullFields);
             }
+            sObject.setField(apiName(), convertValue(value));
         }
-        sObject.setField(apiName(), convertValue(value));
     }
 
     private static boolean isEmptyValue(Object value) {
