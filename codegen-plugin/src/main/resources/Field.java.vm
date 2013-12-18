@@ -185,6 +185,7 @@ public class Field<T> {
     }
 
     public void setFieldsToNull(SObject sObject, List<String> fieldsToNull) {
+        sObject.removeField("fieldsToNull");
         for (String field : fieldsToNull) {
             sObject.addField("fieldsToNull", field);
         }
