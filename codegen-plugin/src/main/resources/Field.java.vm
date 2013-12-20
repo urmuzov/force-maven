@@ -7,7 +7,6 @@ import com.sforce.soap.partner.sobject.SObject;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import java.util.GregorianCalendar;
-import com.sforce.ws.bind.XmlObject;
 
 public class Field<T> {
     private static Map<String, Class> objectClassesMap;
@@ -97,31 +96,7 @@ public class Field<T> {
     }
 
     public void valueTo(SObject sObject, Object value) {
-        String apiName = apiName();
-        List<String> nullFields = getFieldsToNull(sObject);
-        if (isEmptyValue(value)) {
-            if (!nullFields.contains(apiName)) {
-                nullFields.add(apiName);
-                setFieldsToNull(sObject, nullFields);
-            }
-            sObject.removeField(apiName);
-        } else {
-            if (nullFields.contains(apiName)) {
-                nullFields.remove(apiName);
-                setFieldsToNull(sObject, nullFields);
-            }
-            sObject.setField(apiName(), convertValue(value));
-        }
-    }
-
-    private static boolean isEmptyValue(Object value) {
-        if (value == null) {
-            return true;
-        }
-        if (value.toString().isEmpty()) {
-            return true;
-        }
-        return false;
+        sObject.setField(apiName(), convertValue(value));
     }
 
     private Object convertValue(Object value) {
@@ -173,21 +148,5 @@ public class Field<T> {
 
     private DateTime convertToUtc(DateTime dt) {
         return dt.withZone(DateTimeZone.UTC).plusMillis(dt.getZone().getOffset(dt));
-    }
-
-    private static List<String> getFieldsToNull(SObject sObject) {
-        Iterator<XmlObject> it = sObject.getChildren("fieldsToNull");
-        List<String> result = new ArrayList<String>();
-        while(it.hasNext()) {
-            result.add((String)it.next().getValue());
-        }
-        return result;
-    }
-
-    public void setFieldsToNull(SObject sObject, List<String> fieldsToNull) {
-        sObject.removeField("fieldsToNull");
-        for (String field : fieldsToNull) {
-            sObject.addField("fieldsToNull", field);
-        }
     }
 }
