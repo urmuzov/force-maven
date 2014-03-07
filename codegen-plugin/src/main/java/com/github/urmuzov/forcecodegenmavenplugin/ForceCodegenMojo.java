@@ -180,13 +180,17 @@ public class ForceCodegenMojo extends AbstractMojo {
                         throw new MojoExecutionException("Parsing error: type is null for field (" + fullName + ") for object (" + objectName + ")");
                     }
                     String type = typeNode.getTextContent();
-                    Node lengthNode = getFirstElementsByTagName(field, "length");
-                    String length = lengthNode == null ? null : lengthNode.getTextContent();
-                    if (length != null) {
-                        lengthMap.put(newFullName, length);
+                    if (type.equals("TextArea")) {
+                        lengthMap.put(newFullName, "255");
+                    } else {
+                        Node lengthNode = getFirstElementsByTagName(field, "length");
+                        String length = lengthNode == null ? null : lengthNode.getTextContent();
+                        if (length != null) {
+                            lengthMap.put(newFullName, length);
+                        }
                     }
-                    boolean formula = getFirstElementsByTagName(field, "formula") != null;
 
+                    boolean formula = getFirstElementsByTagName(field, "formula") != null;
                     Node deleteConstraintNode = getFirstElementsByTagName(field, "deleteConstraint");
                     String deleteConstraintName = null;
                     if (deleteConstraintNode != null) {
