@@ -1,0 +1,34 @@
+package ${outputPackagePkgName};
+
+import com.sforce.contrib.partner.*;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
+import ${outputPackage};
+
+public class $objectName extends $superClass {
+
+#foreach($fieldName in $fieldNames)
+    private Field<${typeClassMap.get(${fieldName})}> $fieldName;
+#end
+    private NameFieldType nameFieldType;
+
+    public void init(${outputPackageSimpleName} objects) {
+        super.init(objects, "$objectApiName");
+        this.nameFieldType = NameFieldType.${nameFieldType};
+#foreach($fieldName in $fieldNames)
+        this.$fieldName = new Field<${typeClassMap.get(${fieldName})}>(this, "$fieldName", "$oldNamesMap.get($fieldName)", FieldType.${typeEnumMap.get(${fieldName})}, $lengthMap.get($fieldName), ${precisionMap.get($fieldName)}, $scaleMap.get($fieldName), true, $removeOnSaveMap.get($fieldName),#if ($referenceMap.containsKey($fieldName)) new FieldReference(objects.$referenceMap.get($fieldName)(), FieldReferenceType.$referenceTypeMap.get($fieldName), DeleteConstraint.$deleteConstrainMap.get($fieldName))#else null#end);
+        addField($fieldName);
+#end
+    }
+
+#foreach($fieldName in $fieldNames)
+    public Field<${typeClassMap.get(${fieldName})}> $fieldName() {
+        return $fieldName;
+    }
+#end
+
+    @Override
+    public NameFieldType nameFieldType() {
+        return this.nameFieldType;
+    }
+}

@@ -1,0 +1,34 @@
+package ${outputPackagePkgName};
+
+import com.google.common.collect.Lists;
+import com.sforce.contrib.partner.Package;
+import java.util.*;
+
+public class ${outputPackageSimpleName} extends Package {
+
+    public static final ${outputPackageSimpleName} INSTANCE = new ${outputPackageSimpleName}();
+
+#foreach($objectName in $objectNames)
+    private final $objectName $objectName;
+#end
+
+    public ${outputPackageSimpleName}() {
+#foreach($objectName in $objectNames)
+        this.$objectName = new $objectName();
+#end
+
+#foreach($objectName in $objectNames)
+        this.${objectName}.init(this);
+#end
+
+#foreach($objectName in $objectNames)
+        add(this.${objectName});
+#end
+    }
+
+#foreach($objectName in $objectNames)
+    public $objectName $objectName() {
+        return $objectName;
+    }
+#end
+}

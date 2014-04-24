@@ -1,9 +1,0 @@
-package ${outputPackage};
-
-public enum FieldType {
-    DOUBLE,
-    BOOLEAN,
-    CALENDAR,
-    STRING,
-    FORMULA
-}

@@ -1,12 +1,6 @@
-package ${outputPackage};
+package com.sforce.contrib.partner;
 
-import com.sforce.soap.partner.sobject.SObject;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
-
-public class CaseComment extends Fields {
+public class CaseComment extends SObjectType {
     private Field<String> commentBody;
     private Field<String> connectionReceivedId;
     private Field<String> connectionSentId;
@@ -17,25 +11,25 @@ public class CaseComment extends Fields {
     private Field<Boolean> isPublished;
     private Field<String> parentId;
 
-    public void init(Objects objects) {
-        super.init(objects, "CaseComment");
-        this.commentBody = new Field<String>(this, "commentBody", "CommentBody", FieldType.STRING, 4000, false);
+    public void init(Package pkg) {
+        super.init(pkg, "CaseComment");
+        this.commentBody = new Field<String>(this, "commentBody", "CommentBody", FieldType.TEXT_AREA, 4000, null, null, false, false);
         addField(commentBody);
-        this.connectionReceivedId = new Field<String>(this, "connectionReceivedId", "ConnectionReceivedId", FieldType.STRING, null, false);
+        this.connectionReceivedId = new Field<String>(this, "connectionReceivedId", "ConnectionReceivedId", FieldType.LOOKUP, null, null, null, false, false);
         addField(connectionReceivedId);
-        this.connectionSentId = new Field<String>(this, "connectionSentId", "ConnectionSentId", FieldType.STRING, null, false);
+        this.connectionSentId = new Field<String>(this, "connectionSentId", "ConnectionSentId", FieldType.LOOKUP, null, null, null, false, false);
         addField(connectionSentId);
-        this.creatorFullPhotoUrl = new Field<String>(this, "creatorFullPhotoUrl", "CreatorFullPhotoUrl", FieldType.STRING, null, false);
+        this.creatorFullPhotoUrl = new Field<String>(this, "creatorFullPhotoUrl", "CreatorFullPhotoUrl", FieldType.URL, null, null, null, false, false);
         addField(creatorFullPhotoUrl);
-        this.creatorName = new Field<String>(this, "creatorName", "CreatorName", FieldType.STRING, null, false);
+        this.creatorName = new Field<String>(this, "creatorName", "CreatorName", FieldType.TEXT, null, null, null, false, false);
         addField(creatorName);
-        this.creatorSmallPhotoUrl = new Field<String>(this, "creatorSmallPhotoUrl", "CreatorSmallPhotoUrl", FieldType.STRING, null, false);
+        this.creatorSmallPhotoUrl = new Field<String>(this, "creatorSmallPhotoUrl", "CreatorSmallPhotoUrl", FieldType.URL, null, null, null, false, false);
         addField(creatorSmallPhotoUrl);
-        this.isDeleted = new Field<Boolean>(this, "isDeleted", "IsDeleted", FieldType.BOOLEAN, null, false);
+        this.isDeleted = new Field<Boolean>(this, "isDeleted", "IsDeleted", FieldType.CHECKBOX, null, null, null, false, false);
         addField(isDeleted);
-        this.isPublished = new Field<Boolean>(this, "isPublished", "IsPublished", FieldType.BOOLEAN, null, false);
+        this.isPublished = new Field<Boolean>(this, "isPublished", "IsPublished", FieldType.CHECKBOX, null, null, null, false, false);
         addField(isPublished);
-        this.parentId = new Field<String>(this, "parentId", "ParentId", FieldType.STRING, null, false);
+        this.parentId = new Field<String>(this, "parentId", "ParentId", FieldType.LOOKUP, null, null, null, false, false);
         addField(parentId);
     }
 

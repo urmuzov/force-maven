@@ -1,6 +1,0 @@
-package ${outputPackage};
-
-public enum DeleteConstrain {
-    SET_NULL,
-    RESTRICT
-}

@@ -1,6 +1,9 @@
-package $outputPackage;
+package ${outputPackagePkgName};
 
-import java.util.Calendar;
+import com.sforce.contrib.partner.*;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
+import ${outputPackage};
 
 public class $objectName extends CustomSettings {
 
@@ -8,10 +11,10 @@ public class $objectName extends CustomSettings {
     private Field<${typeClassMap.get(${fieldName})}> $fieldName;
 #end
 
-    public void init(Objects objects) {
+    public void init(${outputPackageSimpleName} objects) {
         super.init(objects, "$objectApiName", CustomSettingsVisibility.$visibility);
 #foreach($fieldName in $fieldNames)
-        this.$fieldName = new Field<${typeClassMap.get(${fieldName})}>(this, "$fieldName", "$oldNamesMap.get($fieldName)", FieldType.${typeEnumMap.get(${fieldName})}, #if ($lengthMap.containsKey($fieldName)) $lengthMap.get($fieldName) #else null #end, true);
+        this.$fieldName = new Field<${typeClassMap.get(${fieldName})}>(this, "$fieldName", "$oldNamesMap.get($fieldName)", FieldType.${typeEnumMap.get(${fieldName})}, ${lengthMap.get($fieldName)}, ${precisionMap.get($fieldName)}, ${scaleMap.get($fieldName)}, true, $removeOnSaveMap.get($fieldName));
         addField($fieldName);
 #end
     }

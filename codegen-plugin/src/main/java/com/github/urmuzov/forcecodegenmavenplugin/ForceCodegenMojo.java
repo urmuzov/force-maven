@@ -100,9 +100,15 @@ public class ForceCodegenMojo extends AbstractMojo {
             customFieldSuffix = (customFieldSuffix == null || customFieldSuffix.equals("empty")) ? "" : customFieldSuffix;
             customObjectPrefix = (customObjectPrefix == null || customObjectPrefix.equals("empty")) ? "" : customObjectPrefix;
             customObjectSuffix = (customObjectSuffix == null || customObjectSuffix.equals("empty")) ? "" : customObjectSuffix;
+            String outputPackageSimpleName = outputPackage.substring(outputPackage.lastIndexOf(".") + 1);
+            String outputPackagePkgName = outputPackage.substring(0, outputPackage.lastIndexOf("."));
+            String outputPackageDir = outputPackagePkgName.replace(".", "/");
             infoIfDebug("debug: " + debug);
             infoIfDebug("objectsDir: " + objectsDir);
             infoIfDebug("outputPackage: " + outputPackage);
+            infoIfDebug("outputPackageSimpleName: " + outputPackageSimpleName);
+            infoIfDebug("outputPackagePkgName: " + outputPackagePkgName);
+            infoIfDebug("outputPackageDir: " + outputPackageDir);
             infoIfDebug("customObjectPrefix: " + customObjectPrefix);
             infoIfDebug("customObjectSuffix: " + customObjectSuffix);
             infoIfDebug("customObjectCapitalize: " + customObjectCapitalize);
@@ -110,7 +116,6 @@ public class ForceCodegenMojo extends AbstractMojo {
             infoIfDebug("customFieldSuffix: " + customFieldSuffix);
             infoIfDebug("customFieldCapitalize: " + customFieldCapitalize);
 
-            String outputPackageDir = outputPackage.replace(".", "/");
             outDir = outputDir + "/" + outputPackageDir;
             File dir = new File(outDir);
             dir.mkdirs();
@@ -124,24 +129,12 @@ public class ForceCodegenMojo extends AbstractMojo {
 
             VelocityContext vc = new VelocityContext();
             vc.put("outputPackage", outputPackage);
-
-            merge("Field.java.vm", "Field.java", vc);
-            merge("NameFieldType.java.vm", "NameFieldType.java", vc);
-            merge("FieldType.java.vm", "FieldType.java", vc);
-            merge("Fields.java.vm", "Fields.java", vc);
-            merge("CustomSettings.java.vm", "CustomSettings.java", vc);
-            merge("CustomSettingsVisibility.java.vm", "CustomSettingsVisibility.java", vc);
-            merge("StandardCase.java.vm", "StandardCase.java", vc);
-            merge("RecordType.java.vm", "RecordType.java", vc);
-            merge("FieldReference.java.vm", "FieldReference.java", vc);
-            merge("FieldReferenceType.java.vm", "FieldReferenceType.java", vc);
-            merge("DeleteConstrain.java.vm", "DeleteConstrain.java", vc);
+            vc.put("outputPackagePkgName", outputPackagePkgName);
+            vc.put("outputPackageSimpleName", outputPackageSimpleName);
 
             DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 
             List<String> objectNames = new ArrayList<String>();
-            merge("CaseComment.java.vm", "CaseComment.java", vc);
-            objectNames.add("CaseComment");
             for (File objectFile : objectsDir.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
@@ -161,6 +154,9 @@ public class ForceCodegenMojo extends AbstractMojo {
                 Map<String, String> typeEnumMap = new HashMap<String, String>();
                 Map<String, String> typeClassMap = new HashMap<String, String>();
                 Map<String, String> lengthMap = new HashMap<String, String>();
+                Map<String, String> precisionMap = new HashMap<String, String>();
+                Map<String, String> scaleMap = new HashMap<String, String>();
+                Map<String, Boolean> removeOnSaveMap = new HashMap<String, Boolean>();
                 Map<String, String> referenceMap = new HashMap<String, String>();
                 Map<String, String> referenceTypeMap = new HashMap<String, String>();
                 Map<String, String> deleteConstrainMap = new HashMap<String, String>();
@@ -180,17 +176,27 @@ public class ForceCodegenMojo extends AbstractMojo {
                         throw new MojoExecutionException("Parsing error: type is null for field (" + fullName + ") for object (" + objectName + ")");
                     }
                     String type = typeNode.getTextContent();
+                    String length = null;
+                    String precision = null;
+                    String scale = null;
                     if (type.equals("TextArea")) {
                         lengthMap.put(newFullName, "255");
+                        precisionMap.put(newFullName, "null");
+                        scaleMap.put(newFullName, "null");
                     } else {
                         Node lengthNode = getFirstElementsByTagName(field, "length");
-                        String length = lengthNode == null ? null : lengthNode.getTextContent();
-                        if (length != null) {
-                            lengthMap.put(newFullName, length);
-                        }
+                        length = lengthNode == null ? null : lengthNode.getTextContent();
+                        lengthMap.put(newFullName, length == null ? "null" : length);
+                        Node precisionNode = getFirstElementsByTagName(field, "precision");
+                        precision = precisionNode == null ? null : precisionNode.getTextContent();
+                        precisionMap.put(newFullName, precision == null ? "null" : precision);
+                        Node scaleNode = getFirstElementsByTagName(field, "scale");
+                        scale = scaleNode == null ? null : scaleNode.getTextContent();
+                        scaleMap.put(newFullName, scale == null ? "null" : scale);
                     }
 
                     boolean formula = getFirstElementsByTagName(field, "formula") != null;
+                    removeOnSaveMap.put(newFullName, formula);
                     Node deleteConstraintNode = getFirstElementsByTagName(field, "deleteConstraint");
                     String deleteConstraintName = null;
                     if (deleteConstraintNode != null) {
@@ -208,19 +214,22 @@ public class ForceCodegenMojo extends AbstractMojo {
                             referenceTo = convertObjectName(referenceToContent);
                         }
                     }
-
-                    if (type.equals("Text")) {
+                    if (fullName.equalsIgnoreCase("id")) {
                         fieldNames.add(newFullName);
-                        typeEnumMap.put(newFullName, "STRING");
+                        typeEnumMap.put(newFullName, "ID");
+                        typeClassMap.put(newFullName, "String");
+                    } else if (type.equals("Text")) {
+                        fieldNames.add(newFullName);
+                        typeEnumMap.put(newFullName, "TEXT");
                         typeClassMap.put(newFullName, "String");
                     } else if (type.equals("Number")) {
                         fieldNames.add(newFullName);
-                        typeEnumMap.put(newFullName, "DOUBLE");
-                        typeClassMap.put(newFullName, "Double");
+                        typeEnumMap.put(newFullName, "NUMBER");
+                        typeClassMap.put(newFullName, "Number");
                     } else if (type.equals("Percent")) {
                         fieldNames.add(newFullName);
-                        typeEnumMap.put(newFullName, "DOUBLE");
-                        typeClassMap.put(newFullName, "Double");
+                        typeEnumMap.put(newFullName, "PERCENT");
+                        typeClassMap.put(newFullName, "Number");
                     } else if (type.equals("MasterDetail") || type.equals("Lookup")) {
                         if (referenceTo == null) {
                             throw new MojoExecutionException("Parsing error: referenceTo is not defined for field (" + fullName + ") for (" + objectName + ")");
@@ -244,53 +253,55 @@ public class ForceCodegenMojo extends AbstractMojo {
 
                         if (type.equals("MasterDetail")) {
                             referenceTypeMap.put(newFullName, "MASTER_DETAIL");
+                            typeEnumMap.put(newFullName, "MASTER_DETAIL");
                         } else {
                             referenceTypeMap.put(newFullName, "LOOKUP");
+                            typeEnumMap.put(newFullName, "LOOKUP");
                         }
 
                         fieldNames.add(newFullName);
-                        typeEnumMap.put(newFullName, "STRING");
                         typeClassMap.put(newFullName, "String");
                         referenceMap.put(newFullName, referenceTo);
                     } else if (type.equals("Checkbox")) {
                         fieldNames.add(newFullName);
-                        typeEnumMap.put(newFullName, "BOOLEAN");
+                        typeEnumMap.put(newFullName, "CHECKBOX");
                         typeClassMap.put(newFullName, "Boolean");
                     } else if (type.equals("Picklist")) {
                         fieldNames.add(newFullName);
-                        typeEnumMap.put(newFullName, "STRING");
+                        typeEnumMap.put(newFullName, "PICKLIST");
                         typeClassMap.put(newFullName, "String");
                     } else if (type.equals("LongTextArea")) {
                         fieldNames.add(newFullName);
-                        typeEnumMap.put(newFullName, "STRING");
+                        typeEnumMap.put(newFullName, "LONG_TEXT_AREA");
                         typeClassMap.put(newFullName, "String");
                     } else if (type.equals("DateTime")) {
                         fieldNames.add(newFullName);
-                        typeEnumMap.put(newFullName, "CALENDAR");
-                        typeClassMap.put(newFullName, "Calendar");
+                        typeEnumMap.put(newFullName, "DATE_TIME");
+                        typeClassMap.put(newFullName, "DateTime");
                     } else if (type.equals("Date")) {
                         fieldNames.add(newFullName);
-                        typeEnumMap.put(newFullName, "CALENDAR");
-                        typeClassMap.put(newFullName, "Calendar");
+                        typeEnumMap.put(newFullName, "DATE");
+                        typeClassMap.put(newFullName, "LocalDate");
                     } else if (type.equals("Currency")) {
                         fieldNames.add(newFullName);
-                        typeEnumMap.put(newFullName, "DOUBLE");
-                        typeClassMap.put(newFullName, "Double");
+                        typeEnumMap.put(newFullName, "CURRENCY");
+                        typeClassMap.put(newFullName, "Number");
                     } else if (type.equals("TextArea")) {
                         fieldNames.add(newFullName);
-                        typeEnumMap.put(newFullName, "STRING");
+                        typeEnumMap.put(newFullName, "TEXT_AREA");
+                        typeClassMap.put(newFullName, "String");
+                    } else if (type.equals("Email")) {
+                        fieldNames.add(newFullName);
+                        typeEnumMap.put(newFullName, "EMAIL");
                         typeClassMap.put(newFullName, "String");
                     } else if (type.equals("EncryptedText")) {
                         fieldNames.add(newFullName);
-                        typeEnumMap.put(newFullName, "STRING");
+                        typeEnumMap.put(newFullName, "ENCRYPTED_TEXT");
                         typeClassMap.put(newFullName, "String");
                     } else if (type.equals("Summary")) {
                         // skipping
                     } else {
                         throw new MojoExecutionException("Parsing error: unknown type (" + type + ") for field (" + fullName + ") for object (" + objectName + ")");
-                    }
-                    if (formula) {
-                        typeEnumMap.put(newFullName, "FORMULA");
                     }
                 }
 
@@ -324,6 +335,9 @@ public class ForceCodegenMojo extends AbstractMojo {
                 vc.put("referenceTypeMap", referenceTypeMap);
                 vc.put("deleteConstrainMap", deleteConstrainMap);
                 vc.put("lengthMap", lengthMap);
+                vc.put("precisionMap", precisionMap);
+                vc.put("scaleMap", scaleMap);
+                vc.put("removeOnSaveMap", removeOnSaveMap);
                 vc.put("nameFieldType", nameFieldType);
 
                 if (!getElementsByTagName(document.getDocumentElement(), "customSettingsType").isEmpty()) {
@@ -331,16 +345,16 @@ public class ForceCodegenMojo extends AbstractMojo {
                     vc.put("visibility", visibility != null && visibility.getTextContent().equals("Protected") ? "PROTECTED" : "PUBLIC");
                     merge("CustomSettingsExt.java.vm", newObjectName + ".java", vc);
                 } else {
-                    String superClass = "Fields";
+                    String superClass = "SObjectType";
                     if (objectName.equals("Case")) {
                         superClass = "StandardCase";
                     }
                     vc.put("superClass", superClass);
-                    merge("FieldsExt.java.vm", newObjectName + ".java", vc);
+                    merge("SObjectTypeExt.java.vm", newObjectName + ".java", vc);
                 }
             }
             vc.put("objectNames", objectNames);
-            merge("Objects.java.vm", "Objects.java", vc);
+            merge("PackageExt.java.vm", outputPackageSimpleName + ".java", vc);
         } catch (IOException e) {
             throw new MojoExecutionException("IOException", e);
         } catch (ParserConfigurationException e) {
