@@ -135,7 +135,12 @@ public class SObject {
             if (val == null) {
                 fieldsToNull.add(fieldName);
             } else {
-                out.setField(fieldName, convertField(this.fields.get(field)));
+                Object value = convertField(this.fields.get(field));
+                if (value instanceof String && field.length() != null) {
+                    String strValue = (String) value;
+                    value = strValue.substring(0, Math.min(strValue.length(), field.length()));
+                }
+                out.setField(fieldName, value);
             }
         }
         for (String fieldName : this.unrecognizedFields.keySet()) {
