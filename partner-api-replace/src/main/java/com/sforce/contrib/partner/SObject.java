@@ -186,11 +186,19 @@ public class SObject {
     }
 
     public SObject put(String fieldName, Object value) {
+        if (fieldName.equalsIgnoreCase("id")) {
+            setId((String) value);
+            return this;
+        }
         unrecognizedFields.put(fieldName, value);
         return this;
     }
 
     public <T> SObject put(Field<T> field, T value) {
+        if (field.sfName().equalsIgnoreCase("id")) {
+            setId((String) value);
+            return this;
+        }
         if (field.type().equals(FieldType.CHECKBOX) && value == null) {
             throw new IllegalArgumentException("Can't set 'null' value to " + FieldType.CHECKBOX + " field '" + field.sfName() + "', use 'true' or 'false' explicitly");
         }
@@ -199,19 +207,33 @@ public class SObject {
     }
 
     public Object get(String fieldName) {
+        if (fieldName.equalsIgnoreCase("id")) {
+            return getId();
+        }
         return unrecognizedFields.get(fieldName);
     }
 
     public <T> T get(Field<T> field) {
+        if (field.sfName().equalsIgnoreCase("id")) {
+            return (T) getId();
+        }
         return (T) fields.get(field);
     }
 
     public SObject remove(String fieldName) {
+        if (fieldName.equalsIgnoreCase("id")) {
+            setId(null);
+            return this;
+        }
         unrecognizedFields.remove(fieldName);
         return this;
     }
 
     public <T> SObject remove(Field<T> field) {
+        if (field.sfName().equalsIgnoreCase("id")) {
+            setId(null);
+            return this;
+        }
         fields.remove(field);
         return this;
     }
