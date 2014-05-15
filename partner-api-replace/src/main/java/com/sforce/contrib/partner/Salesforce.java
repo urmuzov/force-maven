@@ -11,16 +11,20 @@ public class Salesforce extends Package {
 
     private RecordType RecordType;
     private CaseComment CaseComment;
+    private User User;
 
     public Salesforce() {
         this.RecordType = new RecordType();
         this.CaseComment = new CaseComment();
+        this.User = new User();
 
         this.RecordType.init(this);
         this.CaseComment.init(this);
+        this.User.init(this);
 
         add(this.RecordType);
         add(this.CaseComment);
+        add(this.User);
     }
 
     public RecordType RecordType() {
@@ -28,5 +32,8 @@ public class Salesforce extends Package {
     }
     public CaseComment CaseComment() {
         return this.CaseComment;
+    }
+    public User User() {
+        return this.User;
     }
 }
