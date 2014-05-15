@@ -345,10 +345,11 @@ public class Connection {
             SaveResult[] result = connection.create(converted);
             for (int i = 0; i < result.length; i++) {
                 SaveResult r = result[i];
-                out.add(new Save(batch.get(i), r, converted[i]));
+                Save save = new Save(batch.get(i), r, converted[i]);
+                out.add(save);
                 if (!r.isSuccess()) {
                     if (exceptionOnFail) {
-                        throw new RuntimeException(r.toString());
+                        throw save;
                     } else {
                         failsCount++;
                     }
@@ -538,7 +539,7 @@ public class Connection {
                 out.add(d);
                 if (!r.isSuccess()) {
                     if (exceptionOnFail) {
-                        throw new RuntimeException(r.toString());
+                        throw d;
                     } else {
                         failsCount++;
                     }

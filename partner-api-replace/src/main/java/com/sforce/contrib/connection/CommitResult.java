@@ -24,17 +24,17 @@ public class CommitResult {
         this.creates = creates;
         createsById = Maps.newHashMap();
         for (Save s : creates) {
-            createsById.put(s.object.getId(), s);
+            createsById.put(s.getObject().getId(), s);
         }
         this.updates = updates;
         updatesById = Maps.newHashMap();
         for (Save s : updates) {
-            updatesById.put(s.object.getId(), s);
+            updatesById.put(s.getObject().getId(), s);
         }
         this.deletes = deletes;
         deletesById = Maps.newHashMap();
         for (Delete d : deletes) {
-            deletesById.put(d.objectId, d);
+            deletesById.put(d.getObjectId(), d);
         }
     }
 }
