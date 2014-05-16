@@ -29,13 +29,13 @@ public class Package {
         return bySfName.keySet();
     }
 
-    public Collection<SObjectType> allFields() {
+    public Collection<SObjectType> allSObjectTypes() {
         return bySfName.values();
     }
 
-    public Collection<SObjectType> customFields() {
+    public Collection<SObjectType> customSObjectTypes() {
         List<SObjectType> result = Lists.newArrayList();
-        for (SObjectType objectMeta : allFields()) {
+        for (SObjectType objectMeta : allSObjectTypes()) {
             if (objectMeta.custom()) {
                 result.add(objectMeta);
             }
