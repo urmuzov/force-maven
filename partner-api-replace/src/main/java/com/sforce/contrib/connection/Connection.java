@@ -728,12 +728,16 @@ public class Connection {
 
     private List<FileProperty> getFileProperties(List<String> folders, String type) throws ConnectionException {
         List<ListMetadataQuery> queries = new ArrayList<ListMetadataQuery>();
+        int splitBy = 100;
         if (folders.size() > 0) {
             for (String folder : folders) {
                 ListMetadataQuery query = new ListMetadataQuery();
                 query.setFolder(folder);
                 query.setType(type);
                 queries.add(query);
+            }
+            if ("Dashboard".equals(type)) {
+                splitBy = 3;
             }
         } else {
             ListMetadataQuery query = new ListMetadataQuery();
@@ -742,11 +746,17 @@ public class Connection {
         }
 
         List<FileProperty> result = new ArrayList<FileProperty>();
-        FileProperties[] lmr = getMetadataConnection().listMetadata(queries.toArray(new ListMetadataQuery[queries.size()]), METADATA_API_VERSION);
-        if (lmr == null) {
-            return result;
+        List<FileProperties> lmr = Lists.newArrayList();
+        for (List<ListMetadataQuery> queriesSublist : Lists.partition(queries, splitBy)) {
+            lmr.addAll(
+                    Arrays.asList(getMetadataConnection()
+                            .listMetadata(
+                                    queriesSublist.toArray(new ListMetadataQuery[queriesSublist.size()]),
+                                    METADATA_API_VERSION
+                            )
+                    )
+            );
         }
-
         for (FileProperties n : lmr) {
             result.add(new FileProperty(n.getFullName(), n.getFileName()));
         }
