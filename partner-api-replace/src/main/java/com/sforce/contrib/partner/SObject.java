@@ -124,7 +124,7 @@ public class SObject {
         if (id != null) {
             out.setId(id);
         }
-        out.setType(type.apiName(context));
+        out.setType(type == null ? typeString : type.apiName(context));
         List<String> fieldsToNull = Lists.newArrayList();
         for (Field field : this.fields.keySet()) {
             if (field.removeOnSave()) {
@@ -175,6 +175,10 @@ public class SObject {
 
     public SObjectType getType() {
         return type;
+    }
+
+    public String getTypeString() {
+        return typeString;
     }
 
     public String getId() {

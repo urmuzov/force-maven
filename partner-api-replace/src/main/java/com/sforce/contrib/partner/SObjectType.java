@@ -1,5 +1,6 @@
 package com.sforce.contrib.partner;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.joda.time.DateTime;
 
 import java.util.*;
@@ -64,6 +65,7 @@ public abstract class SObjectType {
         }
     }
 
+    @JsonProperty("sfName")
     public String sfName() {
         return sfName;
     }

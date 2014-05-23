@@ -46,10 +46,10 @@ public class Connection {
     }
 
     public static List<List<SObject>> makeBatch(Collection<SObject> collection, int batchSize) {
-        Multimap<SObjectType, SObject> byType = TreeMultimap.create(new Comparator<SObjectType>() {
+        Multimap<String, SObject> byType = TreeMultimap.create(new Comparator<String>() {
                                                                    @Override
-                                                                   public int compare(SObjectType o1, SObjectType o2) {
-                                                                       return o1 == null ? (o2 == null ? 0 : 1) : o1.sfName().compareTo(o2.sfName());
+                                                                   public int compare(String o1, String o2) {
+                                                                       return o1 == null ? (o2 == null ? 0 : 1) : o1.compareTo(o2);
                                                                    }
                                                                }, new Comparator<SObject>() {
                                                                    @Override
@@ -62,13 +62,13 @@ public class Connection {
             if (object == null) {
                 throw new IllegalArgumentException("Expected SObject found null");
             }
-            byType.put(object.getType(), object);
+            byType.put(object.getType() == null ? object.getTypeString() : object.getType().sfName(), object);
         }
         List<List<SObject>> out = Lists.newArrayList();
         List<SObject> batch = Lists.newArrayList();
-        SObjectType lastType = null;
+        String lastType = null;
         int typesInBatch = 0;
-        for (Map.Entry<SObjectType, SObject> e : byType.entries()) {
+        for (Map.Entry<String, SObject> e : byType.entries()) {
             if (!e.getKey().equals(lastType)) {
                 lastType = e.getKey();
                 typesInBatch += 1;
