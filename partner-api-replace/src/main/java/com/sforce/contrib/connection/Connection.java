@@ -168,19 +168,33 @@ public class Connection {
         return new Connection(createConnection(username, password, token), context);
     }
 
-//    public static Connection(String serviceEndpoint, String sessionId, @Nullable String namespace) throws ConnectionException {
-//        this(createConnection(serviceEndpoint, sessionId), namespace);
-//    }
+    public static Connection createNewConnection(String serviceEndpoint, String sessionId, Context context) throws ConnectionException {
+        return new Connection(serviceEndpoint, sessionId, context);
+    }
 
     public static Connection restoreConnection(ConnectionDto connectionDto) throws ConnectionException {
         return new Connection(connectionDto);
     }
 
+    protected Connection(String serviceEndpoint, String sessionId, Context context) throws ConnectionException {
+        this.connection = createConnection(serviceEndpoint, sessionId);
+        this.connectionDto = createConnectionDto(this.connection, context);
+    }
+
     protected Connection(PartnerConnection partnerConnection, Context context) throws ConnectionException {
         this.connection = partnerConnection;
+        this.connectionDto = createConnectionDto(partnerConnection, context);
+    }
+
+    protected Connection(ConnectionDto connectionDto) throws ConnectionException {
+        this.connection = createConnection(connectionDto.getServiceEndpoint(), connectionDto.getSessionId());
+        this.connectionDto = connectionDto;
+    }
+
+    private static ConnectionDto createConnectionDto(PartnerConnection partnerConnection, Context context) throws ConnectionException {
         GetUserInfoResult userInfo = partnerConnection.getUserInfo();
         ConnectorConfig config = partnerConnection.getConfig();
-        this.connectionDto = new ConnectionDto(
+        ConnectionDto connectionDto = new ConnectionDto(
                 config.getSessionId(),
                 config.getServiceEndpoint(),
                 userInfo.getOrganizationId(),
@@ -195,12 +209,8 @@ public class Connection {
                 context == null ? new Context() : context
         );
         logger.info("Connection created: {}.", connectionDto);
-    }
 
-
-    protected Connection(ConnectionDto connectionDto) throws ConnectionException {
-        this.connection = createConnection(connectionDto.getServiceEndpoint(), connectionDto.getSessionId());
-        this.connectionDto = connectionDto;
+        return connectionDto;
     }
 
     private static PartnerConnection createConnection(String username, String password, String token) throws ConnectionException {
