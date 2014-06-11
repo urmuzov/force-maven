@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import com.sforce.contrib.partner.Context;
 import com.sforce.contrib.partner.Field;
 import com.sforce.contrib.partner.SObjectType;
+import edu.emory.mathcs.backport.java.util.Arrays;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -146,6 +147,11 @@ public class Soql {
 
     public Soql select(String field) {
         this.selectUnrecognizedFields.add(field);
+        return this;
+    }
+
+    public Soql select(String... fields) {
+        this.selectUnrecognizedFields.addAll(Arrays.asList(fields));
         return this;
     }
 

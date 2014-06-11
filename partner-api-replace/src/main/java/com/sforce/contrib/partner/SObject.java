@@ -46,6 +46,36 @@ public class SObject {
         }
     }
 
+    private static Object convertIfSObject(XmlObject child) {
+        if (child.getXmlType() != null && "sObject".equals(child.getXmlType().getLocalPart())) {
+            return new SObject(child);
+        }
+        return child.getValue();
+    }
+
+    public static String convert15to18(String id) {
+        if (id == null) {
+            return null;
+        } else if (id.length() == 18) {
+            return id;
+        } else if (id.length() != 15) {
+            return id;
+        } else {
+            String suffix = "";
+            for (int i = 0; i < 3; i++) {
+                int flags = 0;
+                for (int j = 0; j < 5; j++) {
+                    String c = id.substring(i * 5 + j, i * 5 + j + 1);
+                    if ((c.compareTo("A") >= 0) && (c.compareTo("Z") <= 0)) {
+                        flags += 1 << j;
+                    }
+                }
+                suffix = suffix + "ABCDEFGHIJKLMNOPQRSTUVWXYZ012345".substring(flags, flags + 1);
+            }
+            return id + suffix;
+        }
+    }
+
     private String id;
     private SObjectType type;
     private String typeString;
@@ -56,9 +86,12 @@ public class SObject {
         this.type = type;
     }
 
-    public SObject(com.sforce.soap.partner.sobject.SObject in, String from) {
+    public SObject(String typeString) {
+        this.typeString = typeString;
+    }
+
+    public SObject(XmlObject in) {
         this.type = null;
-        this.typeString = from;
         Iterator<XmlObject> children = in.getChildren();
         while (children.hasNext()) {
             XmlObject child = children.next();
@@ -67,14 +100,14 @@ public class SObject {
             if (fieldName.equalsIgnoreCase("Id")) {
                 id = (String) value;
             } else if (fieldName.equalsIgnoreCase("Type")) {
-                //type = (String) value;
+                typeString = (String) value;
             } else {
-                unrecognizedFields.put(fieldName, value);
+                unrecognizedFields.put(fieldName, convertIfSObject(child));
             }
         }
     }
 
-    public SObject(com.sforce.soap.partner.sobject.SObject in, SObjectType from) {
+    public SObject(XmlObject in, SObjectType from) {
         this.type = from;
         Iterator<XmlObject> children = in.getChildren();
         while (children.hasNext()) {
@@ -89,7 +122,7 @@ public class SObject {
                 NameParser nameParser = new NameParser(fieldName);
                 Field fieldMd = from.bySfName(nameParser.withoutNamespace());
                 if (fieldMd == null) {
-                    unrecognizedFields.put(fieldName, value);
+                    unrecognizedFields.put(fieldName, convertIfSObject(child));
                 } else {
                     FieldType type = fieldMd.type();
                     if (value == null) {
@@ -112,7 +145,7 @@ public class SObject {
                         LocalDate v = LocalDate.parse(value.toString());
                         fields.put(fieldMd, v);
                     } else {
-                        fields.put(fieldMd, value);
+                        fields.put(fieldMd, convertIfSObject(child));
                     }
                 }
             }
@@ -134,8 +167,10 @@ public class SObject {
             String fieldName = field.apiName(context);
             if (val == null) {
                 fieldsToNull.add(fieldName);
+            } else if (val instanceof SObject) {
+                // пропускаем вложенные SObjects при сохранении
             } else {
-                Object value = convertField(this.fields.get(field));
+                Object value = convertField(val);
                 if (value instanceof String && field.length() != null) {
                     String strValue = (String) value;
                     value = strValue.substring(0, Math.min(strValue.length(), field.length()));
@@ -147,8 +182,10 @@ public class SObject {
             Object val = this.unrecognizedFields.get(fieldName);
             if (val == null) {
                 fieldsToNull.add(fieldName);
+            } else if (val instanceof SObject) {
+                // пропускаем вложенные SObjects при сохранении
             } else {
-                out.setField(fieldName, convertField(this.unrecognizedFields.get(fieldName)));
+                out.setField(fieldName, convertField(val));
             }
         }
         out.setFieldsToNull(fieldsToNull.toArray(new String[fieldsToNull.size()]));
@@ -183,6 +220,10 @@ public class SObject {
 
     public String getId() {
         return id;
+    }
+
+    public String getId18() {
+        return convert15to18(id);
     }
 
     public void setId(String id) {
@@ -253,7 +294,7 @@ public class SObject {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        sb.append(getType());
+        sb.append(getType() != null ? getType() : "\"" + getTypeString() + "\"");
         sb.append(':');
         sb.append(id);
         sb.append('{');

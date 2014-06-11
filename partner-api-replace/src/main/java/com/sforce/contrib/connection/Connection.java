@@ -578,7 +578,7 @@ public class Connection {
         while (true) {
             for (com.sforce.soap.partner.sobject.SObject oIn : result.getRecords()) {
                 if (query.getFromType() == null) {
-                    out.add(new SObject(oIn, query.getFromString()));
+                    out.add(new SObject(oIn));
                 } else {
                     out.add(new SObject(oIn, query.getFromType()));
                 }
