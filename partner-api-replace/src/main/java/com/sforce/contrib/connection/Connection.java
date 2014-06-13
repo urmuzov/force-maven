@@ -598,6 +598,31 @@ public class Connection {
         return result.isEmpty() ? null : result.get(0);
     }
 
+    private LimitInfo getApiRequestLimitInfo() {
+        if (connection.getLimitInfoHeader() == null) {
+            return null;
+        }
+        if (connection.getLimitInfoHeader().getLimitInfo() == null) {
+            return null;
+        }
+        for (LimitInfo limit : connection.getLimitInfoHeader().getLimitInfo()) {
+            if (limit.getType().equals("API REQUESTS")) {
+                return limit;
+            }
+        }
+        return null;
+    }
+
+    public Integer getApiRequestLimit() {
+        LimitInfo info = getApiRequestLimitInfo();
+        return info == null ? null : info.getLimit();
+    }
+
+    public Integer getApiRequestCount() {
+        LimitInfo info = getApiRequestLimitInfo();
+        return info == null ? null : info.getCurrent();
+    }
+
 
     /**
      * METADATA
