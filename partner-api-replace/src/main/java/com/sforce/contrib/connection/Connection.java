@@ -319,6 +319,17 @@ public class Connection {
                 .header("Authorization", "Bearer " + getSessionId());
     }
 
+    public String getDataRestUrl() {
+        return "https://" + getSalesforceInstance() + "." + getSalesforceDomainName() + ".com/services/data/v29.0";
+    }
+
+    public WebResource.Builder getDateRestUrlBuilder(String urlSuffix) {
+        String url = getDataRestUrl() + urlSuffix;
+        logger.info("Date REST Request: {}", url);
+        return client.resource(url)
+                .header("Authorization", "Bearer " + getSessionId());
+    }
+
     public Transaction getTransaction() {
         return transaction;
     }

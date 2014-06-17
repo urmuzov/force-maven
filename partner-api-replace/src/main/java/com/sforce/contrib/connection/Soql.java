@@ -54,6 +54,40 @@ public class Soql {
         }
     }
 
+    private static class Aggregate {
+        private final String function;
+        private final Field field;
+        private final String alias;
+
+        private Aggregate(String function, Field field, String alias) {
+            this.function = function;
+            this.field = field;
+            this.alias = alias;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Aggregate)) return false;
+
+            Aggregate that = (Aggregate) o;
+
+            if (alias != null ? !alias.equals(that.alias) : that.alias != null) return false;
+            if (field != null ? !field.equals(that.field) : that.field != null) return false;
+            if (function != null ? !function.equals(that.function) : that.function != null) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = function != null ? function.hashCode() : 0;
+            result = 31 * result + (field != null ? field.hashCode() : 0);
+            result = 31 * result + (alias != null ? alias.hashCode() : 0);
+            return result;
+        }
+    }
+
     private final Set<Field> selectFields = Sets.newTreeSet(new Comparator<Field>() {
         @Override
         public int compare(Field o1, Field o2) {
@@ -61,6 +95,7 @@ public class Soql {
         }
     });
     private final Set<String> selectUnrecognizedFields = Sets.newTreeSet(String.CASE_INSENSITIVE_ORDER);
+    private final List<Aggregate> selectAggregates = Lists.newArrayList();
     private final String fromString;
     private final SObjectType fromType;
 
@@ -167,6 +202,11 @@ public class Soql {
 
     public Soql select(Field... fields) {
         select(Lists.newArrayList(fields));
+        return this;
+    }
+
+    public Soql selectAggregate(String function, Field field, String alias) {
+        selectAggregates.add(new Aggregate(function, field, alias));
         return this;
     }
 
@@ -311,7 +351,7 @@ public class Soql {
         }
 
         builder.append("SELECT");
-        if (selectFields.isEmpty() && selectUnrecognizedFields.isEmpty()) {
+        if (selectFields.isEmpty() && selectUnrecognizedFields.isEmpty() && selectAggregates.isEmpty()) {
             throw new IllegalStateException("No select fields defined.");
         }
 
@@ -321,6 +361,9 @@ public class Soql {
         }
         for (String f : selectUnrecognizedFields) {
             fieldNames.add(f);
+        }
+        for (Aggregate f : selectAggregates) {
+            fieldNames.add(f.function + "(" + f.field.apiName(context) + ") " + f.alias);
         }
         builder.append(" ").append(Joiner.on(", ").join(fieldNames));
         builder.append(" FROM ").append(fromType != null ? fromType.apiName(context) : fromString);
