@@ -2,10 +2,7 @@ package com.sforce.contrib.connection;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.TreeMultimap;
+import com.google.common.collect.*;
 import com.sforce.contrib.metadata.FixedTypeMapper;
 import com.sforce.contrib.partner.*;
 import com.sforce.contrib.partner.Field;
@@ -163,9 +160,12 @@ public class Connection {
     private ConnectionDto connectionDto;
     private final PartnerConnection connection;
     private Transaction transaction = new Transaction(this);
+    private EnumMap<ApiRequestType, Integer> requestCount = Maps.newEnumMap(ApiRequestType.class);
 
     public static Connection createNewConnection(String username, String password, String token, Context context) throws ConnectionException {
-        return new Connection(createConnection(username, password, token), context);
+        Connection connection = new Connection(createConnection(username, password, token), context);
+        connection.onApiRequest(ApiRequestType.LOGIN);
+        return connection;
     }
 
     public static Connection createNewConnection(String serviceEndpoint, String sessionId, Context context) throws ConnectionException {
@@ -266,6 +266,24 @@ public class Connection {
         return metadataConnection;
     }
 
+    protected void onApiRequest(ApiRequestType apiRequest) {
+        if (requestCount.containsKey(apiRequest)) {
+            requestCount.put(apiRequest, requestCount.get(apiRequest) + 1);
+        } else {
+            requestCount.put(apiRequest, 1);
+        }
+    }
+
+    public Map<ApiRequestType, Integer> getRequestCount() {
+        return ImmutableMap.copyOf(requestCount);
+    }
+
+    public synchronized Map<ApiRequestType, Integer> getRequestCountAndClear() {
+        ImmutableMap<ApiRequestType, Integer> out = ImmutableMap.copyOf(requestCount);
+        requestCount.clear();
+        return out;
+    }
+
     public ConnectionDto getConnectionDto() {
         return connectionDto;
     }
@@ -315,6 +333,7 @@ public class Connection {
     public WebResource.Builder getApexRestUrlBuilder(Package pkg, String urlSuffix) {
         String url = getApexRestUrl(pkg) + urlSuffix;
         logger.info("APEX REST Request: {}", url);
+        onApiRequest(ApiRequestType.APEX_REST);
         return client.resource(url)
                 .header("Authorization", "Bearer " + getSessionId());
     }
@@ -326,6 +345,7 @@ public class Connection {
     public WebResource.Builder getDateRestUrlBuilder(String urlSuffix) {
         String url = getDataRestUrl() + urlSuffix;
         logger.info("Date REST Request: {}", url);
+        onApiRequest(ApiRequestType.DATA);
         return client.resource(url)
                 .header("Authorization", "Bearer " + getSessionId());
     }
@@ -364,6 +384,7 @@ public class Connection {
             logger.info("Creating {} objects. {} left", objects.size(), objects.size() - processed);
             com.sforce.soap.partner.sobject.SObject[] converted = convertSObjects(batch, getContext());
             SaveResult[] result = connection.create(converted);
+            onApiRequest(ApiRequestType.CREATE);
             for (int i = 0; i < result.length; i++) {
                 SaveResult r = result[i];
                 Save save = new Save(batch.get(i), r, converted[i]);
@@ -415,6 +436,7 @@ public class Connection {
             logger.info("Upserting {} objects. {} left", objects.size(), objects.size() - processed);
             com.sforce.soap.partner.sobject.SObject[] converted = convertSObjects(batch, getContext());
             UpsertResult[] result = connection.upsert(externalIdField.apiName(getContext()), converted);
+            onApiRequest(ApiRequestType.UPSERT);
             for (int i = 0; i < result.length; i++) {
                 UpsertResult r = result[i];
                 out.add(new Upsert(batch.get(i), r, converted[i]));
@@ -467,6 +489,7 @@ public class Connection {
             logger.info("Updating {} objects. {} left", objects.size(), objects.size() - processed);
             com.sforce.soap.partner.sobject.SObject[] converted = convertSObjects(batch, getContext());
             SaveResult[] result = connection.update(converted);
+            onApiRequest(ApiRequestType.UPDATE);
             for (int i = 0; i < result.length; i++) {
                 SaveResult r = result[i];
                 out.add(new Save(batch.get(i), r, converted[i]));
@@ -554,6 +577,7 @@ public class Connection {
             logger.info("Deleting {} objects. {} left", ids.size(), idsList.size());
             List<String> portion = idsList.subList(0, Math.min(DEFAULT_BATCH_SIZE, idsList.size()));
             DeleteResult[] res = connection.delete(portion.toArray(new String[0]));
+            onApiRequest(ApiRequestType.DELETE);
             for (int i = 0; i < res.length; i++) {
                 DeleteResult r = res[i];
                 Delete d = new Delete(portion.get(i), r);
@@ -584,6 +608,7 @@ public class Connection {
     public List<SObject> query(Soql query) throws ConnectionException {
         String q = query.compile(getContext());
         QueryResult result = connection.query(q);
+        onApiRequest(ApiRequestType.QUERY);
         logger.info("Quering {} '{}'", result.getQueryLocator(), q);
         List<SObject> out = Lists.newArrayList();
         while (true) {
@@ -596,6 +621,7 @@ public class Connection {
             }
             if (!result.isDone()) {
                 result = connection.queryMore(result.getQueryLocator());
+                onApiRequest(ApiRequestType.QUERY);
                 logger.info("Quering more {}", result.getQueryLocator());
             } else {
                 break;
@@ -669,7 +695,9 @@ public class Connection {
     }
 
     public <T extends Metadata> AsyncResult[] createMetadata(List<T> objects, int timeoutMultiplier) throws ConnectionException {
-        return waitResult(getMetadataConnection().create(objects.toArray(new Metadata[objects.size()])), timeoutMultiplier);
+        AsyncResult[] asyncResults = getMetadataConnection().create(objects.toArray(new Metadata[objects.size()]));
+        onApiRequest(ApiRequestType.METADATA_CREATE);
+        return waitResult(asyncResults, timeoutMultiplier);
     }
 
     public <T extends Metadata> AsyncResult[] updateMetadata(List<T> objects) throws ConnectionException {
@@ -685,7 +713,9 @@ public class Connection {
             updates.add(updateMetadata);
         }
 
-        return waitResult(getMetadataConnection().update(updates.toArray(new UpdateMetadata[updates.size()])), timeoutMultiplier);
+        AsyncResult[] update = getMetadataConnection().update(updates.toArray(new UpdateMetadata[updates.size()]));
+        onApiRequest(ApiRequestType.METADATA_UPDATE);
+        return waitResult(update, timeoutMultiplier);
     }
 
     public <T extends Metadata> AsyncResult[] deleteMetadata(List<T> objects) throws ConnectionException {
@@ -693,7 +723,9 @@ public class Connection {
     }
 
     public <T extends Metadata> AsyncResult[] deleteMetadata(List<T> objects, int timeoutMultiplier) throws ConnectionException {
-        return waitResult(getMetadataConnection().delete(objects.toArray(new Metadata[objects.size()])), timeoutMultiplier);
+        AsyncResult[] delete = getMetadataConnection().delete(objects.toArray(new Metadata[objects.size()]));
+        onApiRequest(ApiRequestType.METADATA_DELETE);
+        return waitResult(delete, timeoutMultiplier);
     }
 
     public String retrievePackageVersion(Package pkg) throws ConnectionException, IOException {
@@ -708,6 +740,7 @@ public class Connection {
         // Assuming that the SOAP binding has already been established.
         FileProperties[] lmr = getMetadataConnection().listMetadata(
                 new ListMetadataQuery[]{query}, asOfVersion);
+        onApiRequest(ApiRequestType.METADATA_LIST);
         if (lmr != null) {
             for (FileProperties n : lmr) {
                 if (namespace.equals(n.getNamespacePrefix())) {
@@ -802,6 +835,7 @@ public class Connection {
                             )
                     )
             );
+            onApiRequest(ApiRequestType.METADATA_LIST);
         }
         for (FileProperties n : lmr) {
             result.add(new FileProperty(n.getFullName(), n.getFileName()));
@@ -832,8 +866,11 @@ public class Connection {
         pack.setVersion(Double.toString(METADATA_API_VERSION));
         retrieveRequest.setUnpackaged(pack);
 
-        AsyncResult asyncResult = waitResult(new AsyncResult[]{getMetadataConnection().retrieve(retrieveRequest)}, 1)[0];
+        AsyncResult retrieve = getMetadataConnection().retrieve(retrieveRequest);
+        onApiRequest(ApiRequestType.METADATA_RETRIEVE);
+        AsyncResult asyncResult = waitResult(new AsyncResult[]{retrieve}, 1)[0];
         RetrieveResult result = getMetadataConnection().checkRetrieveStatus(asyncResult.getId());
+        onApiRequest(ApiRequestType.METADATA_CHECK_RETRIEVE_STATUS);
 
         return result.getZipFile();
     }
@@ -863,6 +900,7 @@ public class Connection {
             } catch (InterruptedException ex) {
             }
             processResults = getMetadataConnection().checkStatus(ids.toArray(new String[ids.size()]));
+            onApiRequest(ApiRequestType.METADATA_CHECK_STATUS);
             wait += MIN_WAIT_TIMEOUT_MILLISECONDS;
             if (wait > MAX_WAIT_TIMEOUT_MILLISECONDS * timeoutMultiplier) {
                 throw new RuntimeException("Metadata retrieve zip request timed out.");
