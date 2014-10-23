@@ -3,30 +3,25 @@ package com.sforce.contrib.connection;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
-import com.sforce.contrib.metadata.FixedTypeMapper;
 import com.sforce.contrib.partner.*;
 import com.sforce.contrib.partner.Field;
 import com.sforce.contrib.partner.Package;
 import com.sforce.soap.metadata.*;
+import com.sforce.soap.metadata.DeleteResult;
+import com.sforce.soap.metadata.SaveResult;
+import com.sforce.soap.metadata.UpsertResult;
 import com.sforce.soap.partner.*;
 import com.sforce.ws.ConnectionException;
 import com.sforce.ws.ConnectorConfig;
-import com.sforce.ws.parser.PullParserException;
-import com.sforce.ws.parser.XmlInputStream;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 /**
  * User: urmuzov
@@ -247,7 +242,7 @@ public class Connection {
         return new PartnerConnection(config);
     }
 
-    protected MetadataConnection getMetadataConnection() throws ConnectionException {
+    public MetadataConnection getMetadataConnection() throws ConnectionException {
         if (metadataConnection == null) {
             ConnectorConfig metadataConfig = new ConnectorConfig();
             ConnectorConfig config = this.connection.getConfig();
@@ -383,10 +378,10 @@ public class Connection {
         for (List<SObject> batch : data) {
             logger.info("Creating {} objects. {} left", objects.size(), objects.size() - processed);
             com.sforce.soap.partner.sobject.SObject[] converted = convertSObjects(batch, getContext());
-            SaveResult[] result = connection.create(converted);
+            com.sforce.soap.partner.SaveResult[] result = connection.create(converted);
             onApiRequest(ApiRequestType.CREATE);
             for (int i = 0; i < result.length; i++) {
-                SaveResult r = result[i];
+                com.sforce.soap.partner.SaveResult r = result[i];
                 Save save = new Save(batch.get(i), r, converted[i]);
                 out.add(save);
                 if (!r.isSuccess()) {
@@ -435,10 +430,10 @@ public class Connection {
         for (List<SObject> batch : data) {
             logger.info("Upserting {} objects. {} left", objects.size(), objects.size() - processed);
             com.sforce.soap.partner.sobject.SObject[] converted = convertSObjects(batch, getContext());
-            UpsertResult[] result = connection.upsert(externalIdField.apiName(getContext()), converted);
+            com.sforce.soap.partner.UpsertResult[] result = connection.upsert(externalIdField.apiName(getContext()), converted);
             onApiRequest(ApiRequestType.UPSERT);
             for (int i = 0; i < result.length; i++) {
-                UpsertResult r = result[i];
+                com.sforce.soap.partner.UpsertResult r = result[i];
                 out.add(new Upsert(batch.get(i), r, converted[i]));
                 if (!r.isSuccess()) {
                     if (exceptionOnFail) {
@@ -488,10 +483,10 @@ public class Connection {
         for (List<SObject> batch : data) {
             logger.info("Updating {} objects. {} left", objects.size(), objects.size() - processed);
             com.sforce.soap.partner.sobject.SObject[] converted = convertSObjects(batch, getContext());
-            SaveResult[] result = connection.update(converted);
+            com.sforce.soap.partner.SaveResult[] result = connection.update(converted);
             onApiRequest(ApiRequestType.UPDATE);
             for (int i = 0; i < result.length; i++) {
-                SaveResult r = result[i];
+                com.sforce.soap.partner.SaveResult r = result[i];
                 out.add(new Save(batch.get(i), r, converted[i]));
                 if (!r.isSuccess()) {
                     if (exceptionOnFail) {
@@ -576,10 +571,10 @@ public class Connection {
         while (!idsList.isEmpty()) {
             logger.info("Deleting {} objects. {} left", ids.size(), idsList.size());
             List<String> portion = idsList.subList(0, Math.min(DEFAULT_BATCH_SIZE, idsList.size()));
-            DeleteResult[] res = connection.delete(portion.toArray(new String[0]));
+            com.sforce.soap.partner.DeleteResult[] res = connection.delete(portion.toArray(new String[0]));
             onApiRequest(ApiRequestType.DELETE);
             for (int i = 0; i < res.length; i++) {
-                DeleteResult r = res[i];
+                com.sforce.soap.partner.DeleteResult r = res[i];
                 Delete d = new Delete(portion.get(i), r);
                 out.add(d);
                 if (!r.isSuccess()) {
@@ -664,68 +659,130 @@ public class Connection {
     /**
      * METADATA
      */
-
-    private static final int MIN_WAIT_TIMEOUT_MILLISECONDS = 1000;
-    private static final int MAX_WAIT_TIMEOUT_MILLISECONDS = 100000000;
-    private static final double METADATA_API_VERSION = 29.0;
-
-    public <T1 extends Metadata, T2 extends Metadata> List<T2> retrieveMetadata(Class<T1> metadataClass, Class<T2> returnClass) throws ConnectionException, IOException {
-        List<FileProperty> members = getItems(isFolderSpecific(metadataClass) ? getFolders(metadataClass) : new ArrayList<String>(), metadataClass);
-        return deserializeMetadata(getEntries(retrieveZip(members, metadataClass), members), returnClass);
-    }
+    private static final int METADATA_BATCH_SIZE = 10;
+    public static final double METADATA_API_VERSION = 32.0;
 
     public <T extends Metadata> List<T> retrieveMetadata(Class<T> metadataClass) throws ConnectionException, IOException {
-        return retrieveMetadata(metadataClass, metadataClass);
-    }
-
-    public <T extends Metadata> List<T> retrieveMetadata(Class<T> metadataClass, final String folder, String... names) throws ConnectionException, IOException {
+        String type = metadataClass.getSimpleName();
+        List<ListMetadataQuery> queries = Lists.newArrayList();
         if (!isFolderSpecific(metadataClass)) {
-            throw new UnsupportedOperationException("Requested objects must be folder specific.");
+            ListMetadataQuery query = new ListMetadataQuery();
+            query.setType(type);
+            queries.add(query);
+        } else {
+            ListMetadataQuery folderQuery = new ListMetadataQuery();
+            folderQuery.setType(type + "Folder");
+            List<String> folders = Lists.newArrayList();
+            for (FileProperties prop : getMetadataConnection().listMetadata(new ListMetadataQuery[]{ folderQuery }, METADATA_API_VERSION)) {
+                folders.add(prop.getFullName());
+            }
+
+            for (String folder : folders) {
+                ListMetadataQuery query = new ListMetadataQuery();
+                query.setType(type);
+                query.setFolder(folder);
+                queries.add(query);
+            }
         }
 
-        List<String> folders = new ArrayList<String>();
-        folders.add(folder);
-        List<FileProperty> members = getItems(folders, metadataClass, names);
-
-        return deserializeMetadata(getEntries(retrieveZip(members, metadataClass), members), metadataClass);
-    }
-
-    public <T extends Metadata> AsyncResult[] createMetadata(List<T> objects) throws ConnectionException {
-        return createMetadata(objects, 1);
-    }
-
-    public <T extends Metadata> AsyncResult[] createMetadata(List<T> objects, int timeoutMultiplier) throws ConnectionException {
-        AsyncResult[] asyncResults = getMetadataConnection().create(objects.toArray(new Metadata[objects.size()]));
-        onApiRequest(ApiRequestType.METADATA_CREATE);
-        return waitResult(asyncResults, timeoutMultiplier);
-    }
-
-    public <T extends Metadata> AsyncResult[] updateMetadata(List<T> objects) throws ConnectionException {
-        return updateMetadata(objects, 1);
-    }
-
-    public <T extends Metadata> AsyncResult[] updateMetadata(List<T> objects, int timeoutMultiplier) throws ConnectionException {
-        List<UpdateMetadata> updates = new ArrayList<UpdateMetadata>();
-        for (Metadata object : objects) {
-            UpdateMetadata updateMetadata = new UpdateMetadata();
-            updateMetadata.setCurrentName(object.getFullName());
-            updateMetadata.setMetadata(object);
-            updates.add(updateMetadata);
+        List<String> fullNames = Lists.newArrayList();
+        FileProperties[] fileProperties = getMetadataConnection().listMetadata(queries.toArray(new ListMetadataQuery[queries.size()]), METADATA_API_VERSION);
+        for (FileProperties file : fileProperties) {
+            fullNames.add(file.getFullName());
         }
 
-        AsyncResult[] update = getMetadataConnection().update(updates.toArray(new UpdateMetadata[updates.size()]));
-        onApiRequest(ApiRequestType.METADATA_UPDATE);
-        return waitResult(update, timeoutMultiplier);
+        return retrieveMetadata(type, fullNames);
     }
 
-    public <T extends Metadata> AsyncResult[] deleteMetadata(List<T> objects) throws ConnectionException {
-        return deleteMetadata(objects, 1);
+    public <T extends Metadata> List<T> retrieveMetadata(String type, List<String> fullNames) throws ConnectionException {
+        List<Metadata> objects = Lists.newArrayList();
+        List<String> batch = Lists.newArrayList();
+        for (int i = 0; i < fullNames.size(); i++) {
+            batch.add(fullNames.get(i));
+            if ((i + 1) % METADATA_BATCH_SIZE == 0) {
+                objects.addAll(Lists.newArrayList(getMetadataConnection().readMetadata(type, batch.toArray(new String[batch.size()])).getRecords()));
+                batch.clear();
+            }
+        }
+
+        if (batch.size() != 0) {
+            objects.addAll(Lists.newArrayList(getMetadataConnection().readMetadata(type, batch.toArray(new String[batch.size()])).getRecords()));
+        }
+
+        List<T> out = Lists.newArrayList();
+        for (Metadata entry : objects) {
+            out.add((T)entry);
+        }
+
+        return out;
     }
 
-    public <T extends Metadata> AsyncResult[] deleteMetadata(List<T> objects, int timeoutMultiplier) throws ConnectionException {
-        AsyncResult[] delete = getMetadataConnection().delete(objects.toArray(new Metadata[objects.size()]));
-        onApiRequest(ApiRequestType.METADATA_DELETE);
-        return waitResult(delete, timeoutMultiplier);
+    public <T extends Metadata> List<SaveResult> createMetadata(List<T> objects) throws ConnectionException {
+        List<SaveResult> out = Lists.newArrayList();
+        List<Metadata> batch = Lists.newArrayList();
+        MetadataConnection c = getMetadataConnection();
+        for (int i = 0; i < objects.size(); i++) {
+            batch.add(objects.get(i));
+            if ((i + 1) % METADATA_BATCH_SIZE == 0) {
+                out.addAll(Lists.newArrayList(c.createMetadata(batch.toArray(new Metadata[batch.size()]))));
+                batch.clear();
+            }
+        }
+
+        if (batch.size() != 0) {
+            out.addAll(Lists.newArrayList(c.createMetadata(batch.toArray(new Metadata[batch.size()]))));
+            batch.clear();
+        }
+
+        return out;
+    }
+
+    public <T extends Metadata> List<SaveResult> updateMetadata(List<T> objects) throws ConnectionException {
+        List<SaveResult> out = Lists.newArrayList();
+        List<Metadata> batch = Lists.newArrayList();
+        MetadataConnection c = getMetadataConnection();
+        for (int i = 0; i < objects.size(); i++) {
+            batch.add(objects.get(i));
+            if ((i + 1) % METADATA_BATCH_SIZE == 0) {
+                out.addAll(Lists.newArrayList(c.updateMetadata(batch.toArray(new Metadata[batch.size()]))));
+                batch.clear();
+            }
+        }
+
+        if (batch.size() != 0) {
+            out.addAll(Lists.newArrayList(c.updateMetadata(batch.toArray(new Metadata[batch.size()]))));
+            batch.clear();
+        }
+
+        return out;
+    }
+
+    public <T extends Metadata> List<DeleteResult> deleteMetadata(List<T> objects, Class<T> clazz) throws ConnectionException {
+        List<DeleteResult> out = Lists.newArrayList();
+        List<Metadata> batch = Lists.newArrayList();
+        MetadataConnection c = getMetadataConnection();
+
+        String type = clazz.getName();
+        List<String> fullNamesList = Lists.newArrayList();
+        for (T object : objects) {
+            fullNamesList.add(object.getFullName());
+        }
+
+        String[] fullNames = fullNamesList.toArray(new String[fullNamesList.size()]);
+        for (int i = 0; i < objects.size(); i++) {
+            batch.add(objects.get(i));
+            if ((i + 1) % METADATA_BATCH_SIZE == 0) {
+                out.addAll(Lists.newArrayList(c.deleteMetadata(type, fullNames)));
+                batch.clear();
+            }
+        }
+
+        if (batch.size() != 0) {
+            out.addAll(Lists.newArrayList(c.deleteMetadata(type, fullNames)));
+            batch.clear();
+        }
+
+        return out;
     }
 
     public String retrievePackageVersion(Package pkg) throws ConnectionException, IOException {
@@ -733,115 +790,15 @@ public class Connection {
         if (Strings.isNullOrEmpty(namespace)) {
             return null;
         }
-        ListMetadataQuery query = new ListMetadataQuery();
-        query.setType("InstalledPackage");
-        //query.setFolder(null);
-        double asOfVersion = 28.0;
-        // Assuming that the SOAP binding has already been established.
-        FileProperties[] lmr = getMetadataConnection().listMetadata(
-                new ListMetadataQuery[]{query}, asOfVersion);
-        onApiRequest(ApiRequestType.METADATA_LIST);
-        if (lmr != null) {
-            for (FileProperties n : lmr) {
-                if (namespace.equals(n.getNamespacePrefix())) {
-                    List<InstalledPackage> installedPackages = retrieveMetadata(InstalledPackage.class);
-                    for (InstalledPackage installedPackage : installedPackages) {
-                        if (namespace.equals(installedPackage.getFullName())) {
-                            return installedPackage.getVersionNumber();
-                        }
-                    }
-                }
+
+        List<InstalledPackage> installedPackages = retrieveMetadata(InstalledPackage.class);
+        for (InstalledPackage installedPackage : installedPackages) {
+            if (namespace.equals(installedPackage.getFullName())) {
+                return installedPackage.getVersionNumber();
             }
         }
+
         return null;
-    }
-
-    private <T extends Metadata> List<T> deserializeMetadata(Map<String, byte[]> entries, Class<T> metadataClass) throws ConnectionException, IOException {
-        List<T> result = new ArrayList<T>();
-        FixedTypeMapper mapper = new FixedTypeMapper();
-        mapper.setPackagePrefix(null);
-        mapper.setConfig(getMetadataConnection().getConfig());
-        for (Map.Entry<String, byte[]> entry : entries.entrySet()) {
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(entry.getValue());
-            try {
-                T instance = metadataClass.newInstance();
-                XmlInputStream xmlStream = new XmlInputStream();
-                xmlStream.setInput(inputStream, "UTF-8");
-                instance.load(xmlStream, mapper);
-                instance.setFullName(entry.getKey());
-                result.add(instance);
-            } catch (InstantiationException ex) {
-                throw new RuntimeException(ex);
-            } catch (IllegalAccessException ex) {
-                throw new RuntimeException(ex);
-            } catch (PullParserException ex) {
-                throw new RuntimeException(ex);
-            } finally {
-                inputStream.close();
-            }
-        }
-
-        return result;
-    }
-
-    private List<String> getFolders(Class metadataClass) throws ConnectionException {
-        return propertiesToNames(getFileProperties(new ArrayList<String>(), metadataClass.getSimpleName() + "Folder"));
-    }
-
-    private List<FileProperty> getItems(List<String> folders, Class metadataClass, String... objectsNames) throws ConnectionException {
-        List<FileProperty> fileProperties = getFileProperties(folders, metadataClass.getSimpleName());
-        if (objectsNames.length == 0) {
-            return fileProperties;
-        }
-
-        List<FileProperty> result = new ArrayList<FileProperty>();
-        List<String> objectsList = new ArrayList<String>(Arrays.asList(objectsNames));
-        for (FileProperty fileProperty : fileProperties) {
-            if (objectsList.contains(fileProperty.fullName)) {
-                result.add(fileProperty);
-            }
-        }
-
-        return result;
-    }
-
-    private List<FileProperty> getFileProperties(List<String> folders, String type) throws ConnectionException {
-        List<ListMetadataQuery> queries = new ArrayList<ListMetadataQuery>();
-        int splitBy = 100;
-        if (folders.size() > 0) {
-            for (String folder : folders) {
-                ListMetadataQuery query = new ListMetadataQuery();
-                query.setFolder(folder);
-                query.setType(type);
-                queries.add(query);
-            }
-            if ("Dashboard".equals(type)) {
-                splitBy = 3;
-            }
-        } else {
-            ListMetadataQuery query = new ListMetadataQuery();
-            query.setType(type);
-            queries.add(query);
-        }
-
-        List<FileProperty> result = new ArrayList<FileProperty>();
-        List<FileProperties> lmr = Lists.newArrayList();
-        for (List<ListMetadataQuery> queriesSublist : Lists.partition(queries, splitBy)) {
-            lmr.addAll(
-                    Arrays.asList(getMetadataConnection()
-                            .listMetadata(
-                                    queriesSublist.toArray(new ListMetadataQuery[queriesSublist.size()]),
-                                    METADATA_API_VERSION
-                            )
-                    )
-            );
-            onApiRequest(ApiRequestType.METADATA_LIST);
-        }
-        for (FileProperties n : lmr) {
-            result.add(new FileProperty(n.getFullName(), n.getFileName()));
-        }
-
-        return result;
     }
 
     private boolean isFolderSpecific(Class metadataClass) {
@@ -849,135 +806,5 @@ public class Connection {
                 || metadataClass == Email.class
                 || metadataClass == Report.class
                 || metadataClass == Dashboard.class;
-    }
-
-    private <T extends Metadata> byte[] retrieveZip(List<FileProperty> membersProperties, Class<T> metadataClass) throws ConnectionException {
-        RetrieveRequest retrieveRequest = new RetrieveRequest();
-        retrieveRequest.setApiVersion(METADATA_API_VERSION);
-        com.sforce.soap.metadata.Package pack = new com.sforce.soap.metadata.Package();
-        PackageTypeMembers members = new PackageTypeMembers();
-        members.setName(metadataClass.getSimpleName());
-        List<String> memberNames = new ArrayList<String>();
-        for (FileProperty fileProperty : membersProperties) {
-            memberNames.add(fileProperty.fullName);
-        }
-        members.setMembers(memberNames.toArray(new String[memberNames.size()]));
-        pack.setTypes(new PackageTypeMembers[]{members});
-        pack.setVersion(Double.toString(METADATA_API_VERSION));
-        retrieveRequest.setUnpackaged(pack);
-
-        AsyncResult retrieve = getMetadataConnection().retrieve(retrieveRequest);
-        onApiRequest(ApiRequestType.METADATA_RETRIEVE);
-        AsyncResult asyncResult = waitResult(new AsyncResult[]{retrieve}, 1)[0];
-        RetrieveResult result = getMetadataConnection().checkRetrieveStatus(asyncResult.getId());
-        onApiRequest(ApiRequestType.METADATA_CHECK_RETRIEVE_STATUS);
-
-        return result.getZipFile();
-    }
-
-    private AsyncResult[] waitResult(AsyncResult[] asyncResults, int timeoutMultiplier) throws ConnectionException {
-        long wait = 0;
-        AsyncResult[] processResults = asyncResults;
-        for (AsyncResult result : asyncResults) {
-            logger.debug("Processing AsyncResult {}", result);
-        }
-        while (true) {
-            boolean done = true;
-            List<String> ids = new ArrayList<String>();
-            for (AsyncResult asyncResult : processResults) {
-                if (!asyncResult.isDone()) {
-                    ids.add(asyncResult.getId());
-                    done = false;
-                }
-            }
-            logger.debug("AsyncResut; Done: {}, StillInProgress: {}", done, ids);
-
-            if (done) {
-                break;
-            }
-            try {
-                Thread.sleep(MIN_WAIT_TIMEOUT_MILLISECONDS);
-            } catch (InterruptedException ex) {
-            }
-            processResults = getMetadataConnection().checkStatus(ids.toArray(new String[ids.size()]));
-            onApiRequest(ApiRequestType.METADATA_CHECK_STATUS);
-            wait += MIN_WAIT_TIMEOUT_MILLISECONDS;
-            if (wait > MAX_WAIT_TIMEOUT_MILLISECONDS * timeoutMultiplier) {
-                throw new RuntimeException("Metadata retrieve zip request timed out.");
-            }
-        }
-
-        for (AsyncResult asyncResult : processResults) {
-            logger.debug("Done AsyncResult {}", asyncResult);
-            if (asyncResult.getState() != AsyncRequestState.Completed) {
-                throw new RuntimeException(asyncResult.getStatusCode() + " msg: " +
-                        asyncResult.getMessage());
-            }
-        }
-
-        return processResults;
-    }
-
-    private Map<String, byte[]> getEntries(byte[] zip, List<FileProperty> members) throws IOException {
-        final String unpackagedRelativePath = "unpackaged/";
-        Map<String, byte[]> entries = new HashMap<String, byte[]>();
-        ByteArrayInputStream byteStream = new ByteArrayInputStream(zip);
-        ZipInputStream zipStream = new ZipInputStream(byteStream);
-        try {
-            ZipEntry entry;
-            while ((entry = zipStream.getNextEntry()) != null) {
-                if (entry.isDirectory() || entry.getName().equals(unpackagedRelativePath + "package.xml")) {
-                    continue;
-                }
-
-                int size;
-                byte[] buffer = new byte[2048];
-                ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
-                BufferedOutputStream bufferedOutput = new BufferedOutputStream(byteOutput, buffer.length);
-                try {
-                    while ((size = zipStream.read(buffer, 0, buffer.length)) != -1) {
-                        bufferedOutput.write(buffer, 0, size);
-                    }
-
-                    bufferedOutput.flush();
-                    entries.put(findPropertyByFileName(members, entry.getName().substring(unpackagedRelativePath.length())).fullName, byteOutput.toByteArray());
-                } finally {
-                    bufferedOutput.close();
-                }
-            }
-        } finally {
-            zipStream.close();
-        }
-
-        return entries;
-    }
-
-    private List<String> propertiesToNames(List<FileProperty> properties) {
-        List<String> result = new ArrayList<String>();
-        for (FileProperty property : properties) {
-            result.add(property.fullName);
-        }
-
-        return result;
-    }
-
-    private FileProperty findPropertyByFileName(List<FileProperty> properties, String fileName) {
-        for (FileProperty property : properties) {
-            if (property.fileName.equals(fileName)) {
-                return property;
-            }
-        }
-
-        return null;
-    }
-
-    private class FileProperty {
-        public FileProperty(String fullName, String fileName) {
-            this.fullName = fullName;
-            this.fileName = fileName;
-        }
-
-        public String fullName;
-        public String fileName;
     }
 }
