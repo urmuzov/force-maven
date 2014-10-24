@@ -48,4 +48,20 @@ public class Package {
         return bySfName.get(sfName);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Package)) return false;
+
+        Package aPackage = (Package) o;
+
+        if (!getClass().equals(aPackage.getClass())) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

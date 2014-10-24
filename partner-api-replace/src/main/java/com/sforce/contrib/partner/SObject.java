@@ -6,6 +6,7 @@ import com.sforce.ws.bind.XmlObject;
 import org.joda.time.*;
 import org.joda.time.format.ISODateTimeFormat;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +75,51 @@ public class SObject {
             }
             return id + suffix;
         }
+    }
+
+    public static SObject merge(Collection<SObject> sObjects) {
+        if (sObjects == null || sObjects.isEmpty()) {
+            return null;
+        }
+        if (sObjects.size() == 1) {
+            return sObjects.iterator().next();
+        }
+        String id = null;
+        SObjectType type = null;
+        String typeString = null;
+        Map<Field, Object> fields = Maps.newHashMap();
+        Map<String, Object> unrecognizedFields = Maps.newHashMap();
+        for (SObject sObject : sObjects) {
+            if (id == null) {
+                id = sObject.getId();
+            } else if (sObject.getId() == null || id.equals(sObject.getId())) {
+                //ничего не делаем
+            } else {
+                throw new IllegalArgumentException("Can't merge two different ids: '" + id + "' and '" + sObject.getId() + "'");
+            }
+            if (type == null) {
+                type = sObject.getType();
+            } else if (sObject.getType() == null || type.equals(sObject.getType())) {
+                //ничего не делаем
+            } else {
+                throw new IllegalArgumentException("Can't merge two different types: '" + type + "' and '" + sObject.getType() + "'");
+            }
+            if (typeString == null) {
+                typeString = sObject.getTypeString();
+            } else if (sObject.getTypeString() == null || typeString.equals(sObject.getTypeString())) {
+                //ничего не делаем
+            } else {
+                throw new IllegalArgumentException("Can't merge two different typeStrings: '" + typeString + "' and '" + sObject.getTypeString() + "'");
+            }
+            fields.putAll(sObject.getFields());
+            unrecognizedFields.putAll(sObject.getUnrecognizedFields());
+        }
+        SObject out = new SObject(type);
+        out.id = id;
+        out.typeString = typeString;
+        out.fields = fields;
+        out.unrecognizedFields = unrecognizedFields;
+        return out;
     }
 
     private String id;
