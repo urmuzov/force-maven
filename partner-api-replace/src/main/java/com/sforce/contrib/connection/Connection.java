@@ -256,6 +256,8 @@ public class Connection {
             // Заменяем вхождение "/u/" на "/m/":
             metadataConfig.setServiceEndpoint(config.getServiceEndpoint().replaceFirst("/u/", "/m/"));
             metadataConfig.setSessionId(config.getSessionId());
+            metadataConfig.setConnectionTimeout(config.getConnectionTimeout());
+            metadataConfig.setReadTimeout(config.getReadTimeout());
             metadataConnection = new MetadataConnection(metadataConfig);
         }
 
