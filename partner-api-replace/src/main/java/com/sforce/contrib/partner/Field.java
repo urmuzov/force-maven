@@ -83,4 +83,23 @@ public class Field<T> {
         return sfName();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Field)) return false;
+
+        Field field = (Field) o;
+
+        if (sObjectType != null ? !sObjectType.equals(field.sObjectType) : field.sObjectType != null) return false;
+        if (sfName != null ? !sfName.equals(field.sfName) : field.sfName != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = sObjectType != null ? sObjectType.hashCode() : 0;
+        result = 31 * result + (sfName != null ? sfName.hashCode() : 0);
+        return result;
+    }
 }

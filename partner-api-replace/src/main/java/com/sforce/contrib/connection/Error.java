@@ -54,4 +54,13 @@ public class Error {
     public void setFields(List<String> fields) {
         this.fields = fields;
     }
+
+    @Override
+    public String toString() {
+        return "Error{" +
+                "message='" + message + '\'' +
+                ", statusCode=" + statusCode +
+                ", fields=" + fields +
+                '}';
+    }
 }

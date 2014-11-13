@@ -116,4 +116,24 @@ public abstract class SObjectType {
     public String toString() {
         return sfName();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SObjectType)) return false;
+
+        SObjectType that = (SObjectType) o;
+
+        if (pkg != null ? !pkg.equals(that.pkg) : that.pkg != null) return false;
+        if (sfName != null ? !sfName.equals(that.sfName) : that.sfName != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = pkg != null ? pkg.hashCode() : 0;
+        result = 31 * result + (sfName != null ? sfName.hashCode() : 0);
+        return result;
+    }
 }

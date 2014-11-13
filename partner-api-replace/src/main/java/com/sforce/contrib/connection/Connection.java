@@ -9,7 +9,6 @@ import com.sforce.contrib.partner.Package;
 import com.sforce.soap.metadata.*;
 import com.sforce.soap.metadata.DeleteResult;
 import com.sforce.soap.metadata.SaveResult;
-import com.sforce.soap.metadata.UpsertResult;
 import com.sforce.soap.partner.*;
 import com.sforce.ws.ConnectionException;
 import com.sforce.ws.ConnectorConfig;
@@ -238,6 +237,8 @@ public class Connection {
         ConnectorConfig config = new ConnectorConfig();
         config.setSessionId(sessionId);
         config.setServiceEndpoint(serviceEndpoint);
+        config.setConnectionTimeout(60000);
+        config.setReadTimeout(60000);
 
         return new PartnerConnection(config);
     }
@@ -255,6 +256,8 @@ public class Connection {
             // Заменяем вхождение "/u/" на "/m/":
             metadataConfig.setServiceEndpoint(config.getServiceEndpoint().replaceFirst("/u/", "/m/"));
             metadataConfig.setSessionId(config.getSessionId());
+            metadataConfig.setConnectionTimeout(config.getConnectionTimeout());
+            metadataConfig.setReadTimeout(config.getReadTimeout());
             metadataConnection = new MetadataConnection(metadataConfig);
         }
 
