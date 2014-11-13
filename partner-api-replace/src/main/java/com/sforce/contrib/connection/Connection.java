@@ -762,7 +762,7 @@ public class Connection {
         List<Metadata> batch = Lists.newArrayList();
         MetadataConnection c = getMetadataConnection();
 
-        String type = clazz.getName();
+        String type = clazz.getSimpleName();
         List<String> fullNamesList = Lists.newArrayList();
         for (T object : objects) {
             fullNamesList.add(object.getFullName());
