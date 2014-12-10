@@ -17,6 +17,7 @@ public abstract class SObjectType {
     private Field<String> createdBy;
     private Field<DateTime> createdDate;
     private Field<String> lastModifiedBy;
+    private Field<String> recordTypeId;
 
     public void init(Package pkg, String sfName) {
         this.pkg = pkg;
@@ -34,6 +35,8 @@ public abstract class SObjectType {
         addField(createdDate, false);
         this.lastModifiedBy = new Field<String>(this, "lastModifiedBy", "LastModifiedBy", FieldType.TEXT, null, null, null, false, false);
         addField(lastModifiedBy, false);
+        this.recordTypeId = new Field<String>(this, "recordTypeId", "RecordTypeId", FieldType.TEXT, null, null, null, false, false);
+        addField(recordTypeId, false);
     }
 
     public Package pkg() {
@@ -97,6 +100,10 @@ public abstract class SObjectType {
 
     public Field<String> lastModifiedBy() {
         return lastModifiedBy;
+    }
+
+    public Field<String> recordTypeId() {
+        return recordTypeId;
     }
 
     public NameFieldType nameFieldType() {

@@ -15,11 +15,33 @@ public class Context {
         return Strings.isNullOrEmpty(namespace) ? name : namespace + "__" + name;
     }
 
+    public static String withoutNamespace(String namespace, String name) {
+        if (name == null) {
+            return null;
+        }
+        if (namespace == null) {
+            return name;
+        }
+        String ns = namespace.toLowerCase() + "__";
+        if (name.toLowerCase().startsWith(ns)) {
+            return name.substring(ns.length());
+        }
+        return name;
+    }
+
     private Map<String, String> pkgToNamespace = Maps.newHashMap();
 
     public Context put(Package pkg, String namespace) {
         pkgToNamespace.put(pkg.name(), namespace);
         return this;
+    }
+
+    public String withNamespace(Package pkg, String name) {
+        return withNamespace(get(pkg), name);
+    }
+
+    public String withoutNamespace(Package pkg, String name) {
+        return withoutNamespace(get(pkg), name);
     }
 
     public String get(Package pkg) {
