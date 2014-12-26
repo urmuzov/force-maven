@@ -13,10 +13,9 @@ public abstract class SObjectType {
     private Map<String, Field> bySfName = new HashMap<String, Field>();
     private Field<String> id;
     private Field<String> name;
-    private Field<String> owner;
-    private Field<String> createdBy;
+    private Field<String> createdById;
     private Field<DateTime> createdDate;
-    private Field<String> lastModifiedBy;
+    private Field<String> lastModifiedById;
     private Field<String> recordTypeId;
 
     public void init(Package pkg, String sfName) {
@@ -27,14 +26,12 @@ public abstract class SObjectType {
         addField(id, false);
         this.name = new Field<String>(this, "name", "Name", FieldType.TEXT, 80, null, null, false, false);
         addField(name, false);
-        this.owner = new Field<String>(this, "owner", "Owner", FieldType.TEXT, null, null, null, false, false);
-        addField(owner, false);
-        this.createdBy = new Field<String>(this, "createdBy", "CreatedBy", FieldType.TEXT, null, null, null, false, false);
-        addField(createdBy, false);
+        this.createdById = new Field<String>(this, "createdById", "CreatedById", FieldType.TEXT, null, null, null, false, false);
+        addField(createdById, false);
         this.createdDate = new Field<DateTime>(this, "createdBy", "CreatedDate", FieldType.DATE_TIME, null, null, null, false, false);
         addField(createdDate, false);
-        this.lastModifiedBy = new Field<String>(this, "lastModifiedBy", "LastModifiedBy", FieldType.TEXT, null, null, null, false, false);
-        addField(lastModifiedBy, false);
+        this.lastModifiedById = new Field<String>(this, "lastModifiedById", "LastModifiedById", FieldType.TEXT, null, null, null, false, false);
+        addField(lastModifiedById, false);
         this.recordTypeId = new Field<String>(this, "recordTypeId", "RecordTypeId", FieldType.TEXT, null, null, null, false, false);
         addField(recordTypeId, false);
     }
@@ -86,20 +83,16 @@ public abstract class SObjectType {
         return name;
     }
 
-    public Field<String> owner() {
-        return owner;
-    }
-
-    public Field<String> createdBy() {
-        return createdBy;
+    public Field<String> createdById() {
+        return createdById;
     }
 
     public Field<DateTime> createdDate() {
         return createdDate;
     }
 
-    public Field<String> lastModifiedBy() {
-        return lastModifiedBy;
+    public Field<String> lastModifiedById() {
+        return lastModifiedById;
     }
 
     public Field<String> recordTypeId() {
