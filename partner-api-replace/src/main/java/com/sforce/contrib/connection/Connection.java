@@ -514,12 +514,12 @@ public class Connection {
         return out;
     }
 
-    public void delete(SObject object) throws ConnectionException {
-        delete(ImmutableList.of(object), true, false);
+    public List<Delete> delete(SObject object) throws ConnectionException {
+        return delete(ImmutableList.of(object), true, false);
     }
 
-    public void delete(Collection<SObject> objects) throws ConnectionException {
-        delete(objects, true, false);
+    public List<Delete> delete(Collection<SObject> objects) throws ConnectionException {
+        return delete(objects, true, false);
     }
 
     public List<Delete> delete(Collection<SObject> objects, boolean exceptionOnFail, boolean slowDown) throws ConnectionException {
@@ -554,12 +554,12 @@ public class Connection {
         return deleteById(ids, exceptionOnFail, false);
     }
 
-    public void deleteById(String id) throws ConnectionException {
-        deleteById(ImmutableList.of(id));
+    public List<Delete> deleteById(String id) throws ConnectionException {
+        return deleteById(ImmutableList.of(id));
     }
 
-    public void deleteById(Collection<String> ids) throws ConnectionException {
-        deleteById(ids, true, false);
+    public List<Delete> deleteById(Collection<String> ids) throws ConnectionException {
+        return deleteById(ids, true, false);
     }
 
     public List<Delete> deleteById(Collection<String> ids, boolean exceptionOnFail, boolean slowDown) throws ConnectionException {
