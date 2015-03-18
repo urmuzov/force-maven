@@ -63,7 +63,7 @@ public class Expression<T> {
         } else if (value instanceof DateTime) {
             rawValue = (serializeDateTime((DateTime) value));
         } else if (value instanceof Calendar) {
-            rawValue = (serializeDateTime(new DateTime(((Calendar) value).getTimeInMillis(), DateTimeZone.UTC)));
+            rawValue = (serializeDateTime(new DateTime(((Calendar) value).getTimeInMillis())));
         } else {
             rawValue = value.toString();
         }
@@ -113,7 +113,7 @@ public class Expression<T> {
     }
 
     private static String serializeDateTime(DateTime value) {
-        return value.toString(new DateTimeFormatterBuilder()
+        return value.withZone(DateTimeZone.UTC).toString(new DateTimeFormatterBuilder()
                 .append(ISODateTimeFormat.date())
                 .appendLiteral('T')
                 .append(ISODateTimeFormat.hourMinuteSecondMillis())
