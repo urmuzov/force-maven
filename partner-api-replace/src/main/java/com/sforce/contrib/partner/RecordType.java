@@ -12,20 +12,20 @@ public class RecordType extends SObjectType {
     private Field<Calendar> systemModstamp;
 
     public void init(Package pkg) {
-        super.init(pkg, "RecordType");
-        this.businessProcessId = new Field<String>(this, "businessProcessId", "BusinessProcessId", FieldType.LOOKUP, null, null, null, false, false);
+        super.init(pkg, "RecordType", "Record Type", "Record Types");
+        this.businessProcessId = new Field<String>(this, "businessProcessId", "BusinessProcessId", "Business Process Id", FieldType.LOOKUP, null, null, null, false, false);
         addField(businessProcessId);
-        this.description = new Field<String>(this, "description", "Description", FieldType.TEXT, null, null, null, false, false);
+        this.description = new Field<String>(this, "description", "Description", "Description", FieldType.TEXT, null, null, null, false, false);
         addField(description);
-        this.developerName = new Field<String>(this, "developerName", "DeveloperName", FieldType.TEXT, null, null, null, false, false);
+        this.developerName = new Field<String>(this, "developerName", "DeveloperName", "Developer Name", FieldType.TEXT, null, null, null, false, false);
         addField(developerName);
-        this.isActive = new Field<Boolean>(this, "isActive", "IsActive", FieldType.CHECKBOX, null, null, null, false, false);
+        this.isActive = new Field<Boolean>(this, "isActive", "IsActive", "Is Active", FieldType.CHECKBOX, null, null, null, false, false);
         addField(isActive);
-        this.namespacePrefix = new Field<String>(this, "namespacePrefix", "NamespacePrefix", FieldType.TEXT, null, null, null, false, false);
+        this.namespacePrefix = new Field<String>(this, "namespacePrefix", "NamespacePrefix", "Namespace Prefix", FieldType.TEXT, null, null, null, false, false);
         addField(namespacePrefix);
-        this.sObjectType = new Field<String>(this, "sObjectType", "SobjectType", FieldType.TEXT, null, null, null, false, false);
+        this.sObjectType = new Field<String>(this, "sObjectType", "SobjectType", "SObject Type", FieldType.TEXT, null, null, null, false, false);
         addField(sObjectType);
-        this.systemModstamp = new Field<Calendar>(this, "systemModstamp", "SystemModstamp", FieldType.DATE_TIME, null, null, null, false, false);
+        this.systemModstamp = new Field<Calendar>(this, "systemModstamp", "SystemModstamp", "System Modstamp", FieldType.DATE_TIME, null, null, null, false, false);
         addField(systemModstamp);
     }
 

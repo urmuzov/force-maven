@@ -8,6 +8,7 @@ public class Field<T> {
     private final SObjectType sObjectType;
     private final String javaName;
     private final String sfName;
+    private final String label;
     private final FieldType type;
     private final Integer length;
     private final Integer precision;
@@ -16,14 +17,15 @@ public class Field<T> {
     private final boolean removeOnSave;
     private final FieldReference reference;
 
-    public Field(SObjectType sObjectType, String javaName, String sfName, FieldType type, Integer length, Integer precision, Integer scale, boolean custom, boolean removeOnSave) {
-        this(sObjectType, javaName, sfName, type, length, precision, scale, custom, removeOnSave, null);
+    public Field(SObjectType sObjectType, String javaName, String sfName, String label, FieldType type, Integer length, Integer precision, Integer scale, boolean custom, boolean removeOnSave) {
+        this(sObjectType, javaName, sfName, label, type, length, precision, scale, custom, removeOnSave, null);
     }
 
-    public Field(SObjectType sObjectType, String javaName, String sfName, FieldType type, Integer length, Integer precision, Integer scale, boolean custom, boolean removeOnSave, FieldReference reference) {
+    public Field(SObjectType sObjectType, String javaName, String sfName, String label, FieldType type, Integer length, Integer precision, Integer scale, boolean custom, boolean removeOnSave, FieldReference reference) {
         this.sObjectType = sObjectType;
         this.javaName = javaName;
         this.sfName = sfName;
+        this.label = label;
         this.type = type;
         this.length = length;
         this.precision = precision;
@@ -52,6 +54,10 @@ public class Field<T> {
 
     public String sfName() {
         return sfName;
+    }
+
+    public String label() {
+        return label;
     }
 
     public FieldType type() {

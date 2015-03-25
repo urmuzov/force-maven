@@ -8,6 +8,8 @@ import java.util.*;
 public abstract class SObjectType {
     private Package pkg;
     private String sfName;
+    private String label;
+    private String pluralLabel;
     private boolean custom;
     private List<Field> allFields = new ArrayList<Field>();
     private Map<String, Field> bySfName = new HashMap<String, Field>();
@@ -18,21 +20,23 @@ public abstract class SObjectType {
     private Field<String> lastModifiedById;
     private Field<String> recordTypeId;
 
-    public void init(Package pkg, String sfName) {
+    public void init(Package pkg, String sfName, String label, String pluralLabel) {
         this.pkg = pkg;
         this.sfName = sfName;
         this.custom = sfName.endsWith("__c");
-        this.id = new Field<String>(this, "id", "Id", FieldType.ID, null, null, null, false, false);
+        this.label = label;
+        this.pluralLabel = pluralLabel;
+        this.id = new Field<String>(this, "id", "Id", "ID", FieldType.ID, null, null, null, false, false);
         addField(id, false);
-        this.name = new Field<String>(this, "name", "Name", FieldType.TEXT, 80, null, null, false, false);
+        this.name = new Field<String>(this, "name", "Name", "Name", FieldType.TEXT, 80, null, null, false, false);
         addField(name, false);
-        this.createdById = new Field<String>(this, "createdById", "CreatedById", FieldType.TEXT, null, null, null, false, false);
+        this.createdById = new Field<String>(this, "createdById", "CreatedById", "Created By ID", FieldType.TEXT, null, null, null, false, false);
         addField(createdById, false);
-        this.createdDate = new Field<DateTime>(this, "createdBy", "CreatedDate", FieldType.DATE_TIME, null, null, null, false, false);
+        this.createdDate = new Field<DateTime>(this, "createdBy", "CreatedDate", "Created Date", FieldType.DATE_TIME, null, null, null, false, false);
         addField(createdDate, false);
-        this.lastModifiedById = new Field<String>(this, "lastModifiedById", "LastModifiedById", FieldType.TEXT, null, null, null, false, false);
+        this.lastModifiedById = new Field<String>(this, "lastModifiedById", "LastModifiedById", "Last Modified By ID", FieldType.TEXT, null, null, null, false, false);
         addField(lastModifiedById, false);
-        this.recordTypeId = new Field<String>(this, "recordTypeId", "RecordTypeId", FieldType.TEXT, null, null, null, false, false);
+        this.recordTypeId = new Field<String>(this, "recordTypeId", "RecordTypeId", "Record Type ID", FieldType.TEXT, null, null, null, false, false);
         addField(recordTypeId, false);
     }
 
@@ -68,6 +72,14 @@ public abstract class SObjectType {
     @JsonProperty("sfName")
     public String sfName() {
         return sfName;
+    }
+
+    public String label() {
+        return label;
+    }
+
+    public String pluralLabel() {
+        return  pluralLabel;
     }
 
     public SObject newSObject() {

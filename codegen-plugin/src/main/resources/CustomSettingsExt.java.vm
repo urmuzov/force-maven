@@ -12,9 +12,9 @@ public class $objectName extends CustomSettings {
 #end
 
     public void init(${outputPackageSimpleName} objects) {
-        super.init(objects, "$objectApiName", CustomSettingsVisibility.$visibility);
+        super.init(objects, "$objectApiName", "$objectLabel", "$objectPluralLabel", CustomSettingsVisibility.$visibility);
 #foreach($fieldName in $fieldNames)
-        this.$fieldName = new Field<${typeClassMap.get(${fieldName})}>(this, "$fieldName", "$oldNamesMap.get($fieldName)", FieldType.${typeEnumMap.get(${fieldName})}, ${lengthMap.get($fieldName)}, ${precisionMap.get($fieldName)}, ${scaleMap.get($fieldName)}, true, $removeOnSaveMap.get($fieldName));
+        this.$fieldName = new Field<${typeClassMap.get(${fieldName})}>(this, "$fieldName", "$oldNamesMap.get($fieldName)", "$labelMap.get($fieldName)", FieldType.${typeEnumMap.get(${fieldName})}, ${lengthMap.get($fieldName)}, ${precisionMap.get($fieldName)}, ${scaleMap.get($fieldName)}, true, $removeOnSaveMap.get($fieldName));
         addField($fieldName);
 #end
     }

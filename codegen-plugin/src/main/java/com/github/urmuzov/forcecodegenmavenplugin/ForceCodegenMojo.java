@@ -148,9 +148,16 @@ public class ForceCodegenMojo extends AbstractMojo {
                 vc.put("objectApiName", objectName);
                 objectNames.add(newObjectName);
                 Document document = builder.parse(objectFile);
+                Node labelNode = getFirstElementsByTagName(document.getDocumentElement(), "label");
+                String label = labelNode == null ? objectName : labelNode.getTextContent();
+                vc.put("objectLabel", label);
+                Node pluralLabelNode = getFirstElementsByTagName(document.getDocumentElement(), "pluralLabel");
+                String pluralLabel = pluralLabelNode == null ? label : pluralLabelNode.getTextContent();
+                vc.put("objectPluralLabel", pluralLabel);
                 List<Node> fields = getElementsByTagName(document.getDocumentElement(), "fields");
                 List<String> fieldNames = new ArrayList<String>();
                 Map<String, String> oldNamesMap = new HashMap<String, String>();
+                Map<String, String> labelMap = new HashMap<String, String>();
                 Map<String, String> typeEnumMap = new HashMap<String, String>();
                 Map<String, String> typeClassMap = new HashMap<String, String>();
                 Map<String, String> lengthMap = new HashMap<String, String>();
@@ -176,6 +183,11 @@ public class ForceCodegenMojo extends AbstractMojo {
                         throw new MojoExecutionException("Parsing error: type is null for field (" + fullName + ") for object (" + objectName + ")");
                     }
                     String type = typeNode.getTextContent();
+                    Node fieldLabelNode = getFirstElementsByTagName(field, "label");
+                    if (fieldLabelNode == null) {
+                        throw new MojoExecutionException("Parsing error: label is null for field (" + fullName + ") for object (" + objectName + ")");
+                    }
+                    labelMap.put(newFullName, fieldLabelNode.getTextContent());
                     String length = null;
                     String precision = null;
                     String scale = null;
@@ -329,6 +341,7 @@ public class ForceCodegenMojo extends AbstractMojo {
 
                 vc.put("fieldNames", fieldNames);
                 vc.put("oldNamesMap", oldNamesMap);
+                vc.put("labelMap", labelMap);
                 vc.put("typeEnumMap", typeEnumMap);
                 vc.put("typeClassMap", typeClassMap);
                 vc.put("referenceMap", referenceMap);
