@@ -8,10 +8,7 @@ import com.sforce.contrib.partner.Field;
 import com.sforce.contrib.partner.SObjectType;
 import edu.emory.mathcs.backport.java.util.Arrays;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Soql {
 
@@ -355,7 +352,7 @@ public class Soql {
             throw new IllegalStateException("No select fields defined.");
         }
 
-        List<String> fieldNames = Lists.newArrayList();
+        Set<String> fieldNames = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
         for (Field f : selectFields) {
             fieldNames.add(f.apiName(context));
         }
