@@ -23,6 +23,7 @@ public class SObject {
     private static class NameParser {
         private String namespace;
         private String name;
+        private String cr; // __c or __r
         private boolean custom;
 
         public NameParser(String fullName) {
@@ -30,14 +31,17 @@ public class SObject {
             if (parts.length == 1) {
                 namespace = null;
                 name = parts[0];
+                cr = null;
                 custom = false;
             } else if (parts.length == 2) {
                 namespace = null;
                 name = parts[0];
+                cr =  parts[1];
                 custom = true;
             } else if (parts.length == 3) {
                 namespace = parts[0];
                 name = parts[1];
+                cr = parts[2];
                 custom = true;
             } else {
                 throw new IllegalArgumentException("Can't parse '" + fullName + "'");
@@ -45,7 +49,7 @@ public class SObject {
         }
 
         public String withoutNamespace() {
-            return custom ? name + "__c" : name;
+            return custom ? name + "__" + cr : name;
         }
     }
 
