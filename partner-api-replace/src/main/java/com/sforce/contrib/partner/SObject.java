@@ -1,5 +1,7 @@
 package com.sforce.contrib.partner;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.sforce.ws.bind.XmlObject;
@@ -295,6 +297,20 @@ public class SObject {
         }
         fields.put(field, value);
         return this;
+    }
+
+    public Object find(final String fieldName, final Context context) {
+        Field field = Iterables.find(fields.keySet(), new Predicate<Field>() {
+            @Override
+            public boolean apply(com.sforce.contrib.partner.Field field) {
+                return field.apiName(context).equalsIgnoreCase(fieldName);
+            }
+        }, null);
+        if (field != null) {
+            return fields.get(field);
+        }
+
+        return unrecognizedFields.get(fieldName);
     }
 
     public Object get(String fieldName) {
