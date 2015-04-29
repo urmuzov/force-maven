@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
 import com.sforce.contrib.partner.Context;
+import com.sforce.contrib.partner.Field;
 import com.sforce.contrib.partner.SObject;
 import com.sforce.contrib.partner.SObjectType;
 import com.sforce.soap.metadata.*;
