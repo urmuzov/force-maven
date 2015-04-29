@@ -3,9 +3,9 @@ package com.sforce.contrib.connection;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
-import com.sforce.contrib.partner.*;
-import com.sforce.contrib.partner.Field;
-import com.sforce.contrib.partner.Package;
+import com.sforce.contrib.partner.Context;
+import com.sforce.contrib.partner.SObject;
+import com.sforce.contrib.partner.SObjectType;
 import com.sforce.soap.metadata.*;
 import com.sforce.soap.metadata.DeleteResult;
 import com.sforce.soap.metadata.SaveResult;
@@ -237,8 +237,8 @@ public class Connection {
         ConnectorConfig config = new ConnectorConfig();
         config.setSessionId(sessionId);
         config.setServiceEndpoint(serviceEndpoint);
-        config.setConnectionTimeout(60000);
-        config.setReadTimeout(60000);
+        config.setConnectionTimeout(600000);
+        config.setReadTimeout(600000);
 
         return new PartnerConnection(config);
     }
