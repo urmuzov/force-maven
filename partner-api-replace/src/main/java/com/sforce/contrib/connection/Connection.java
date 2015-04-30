@@ -223,6 +223,8 @@ public class Connection {
         config.setUsername(username);
         config.setPassword(password + token);
         config.setAuthEndpoint("https://login.salesforce.com/services/Soap/u/29.0");
+        config.setConnectionTimeout(600000);
+        config.setReadTimeout(600000);
 
         return new PartnerConnection(config);
     }
