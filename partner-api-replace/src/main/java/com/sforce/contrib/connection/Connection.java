@@ -7,6 +7,7 @@ import com.sforce.contrib.partner.Context;
 import com.sforce.contrib.partner.Field;
 import com.sforce.contrib.partner.SObject;
 import com.sforce.contrib.partner.SObjectType;
+import com.sforce.contrib.partner.Package;
 import com.sforce.soap.metadata.*;
 import com.sforce.soap.metadata.DeleteResult;
 import com.sforce.soap.metadata.SaveResult;
@@ -171,6 +172,10 @@ public class Connection {
         return new Connection(connectionDto);
     }
 
+    public static Connection restoreConnection(ConnectionDto connectionDto, ConnectorConfig config) throws ConnectionException {
+        return new Connection(connectionDto, config);
+    }
+
     protected Connection(String serviceEndpoint, String sessionId, Context context) throws ConnectionException {
         this.connection = createConnection(serviceEndpoint, sessionId);
         this.connectionDto = createConnectionDto(this.connection, context);
@@ -183,6 +188,11 @@ public class Connection {
 
     protected Connection(ConnectionDto connectionDto) throws ConnectionException {
         this.connection = createConnection(connectionDto.getServiceEndpoint(), connectionDto.getSessionId());
+        this.connectionDto = connectionDto;
+    }
+
+    protected Connection(ConnectionDto connectionDto, ConnectorConfig config) throws ConnectionException {
+        this.connection = createConnection(connectionDto.getServiceEndpoint(), connectionDto.getSessionId(), config);
         this.connectionDto = connectionDto;
     }
 
@@ -230,6 +240,13 @@ public class Connection {
     }
 
     private static PartnerConnection createConnection(String serviceEndpoint, String sessionId) throws ConnectionException {
+        ConnectorConfig config = new ConnectorConfig();
+        config.setConnectionTimeout(600000);
+        config.setReadTimeout(600000);
+        return createConnection(serviceEndpoint, sessionId, config);
+    }
+
+    private static PartnerConnection createConnection(String serviceEndpoint, String sessionId, ConnectorConfig config) throws ConnectionException {
         if (serviceEndpoint == null || serviceEndpoint.isEmpty()) {
             throw new IllegalArgumentException("serviceEndpoint");
         }
@@ -237,11 +254,8 @@ public class Connection {
             throw new IllegalArgumentException("sessionId");
         }
 
-        ConnectorConfig config = new ConnectorConfig();
         config.setSessionId(sessionId);
         config.setServiceEndpoint(serviceEndpoint);
-        config.setConnectionTimeout(600000);
-        config.setReadTimeout(600000);
 
         return new PartnerConnection(config);
     }
