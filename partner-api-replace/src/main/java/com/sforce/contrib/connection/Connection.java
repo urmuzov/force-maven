@@ -531,15 +531,15 @@ public class Connection {
         return out;
     }
 
-    public List<Delete> delete(SObject object) throws ConnectionException {
-        return delete(ImmutableList.of(object), true, false);
+    public List<Delete> delete(SObject object, boolean emptyRecycleBin) throws ConnectionException {
+        return delete(ImmutableList.of(object), true, false, emptyRecycleBin);
     }
 
-    public List<Delete> delete(Collection<SObject> objects) throws ConnectionException {
-        return delete(objects, true, false);
+    public List<Delete> delete(Collection<SObject> objects, boolean emptyRecycleBin) throws ConnectionException {
+        return delete(objects, true, false, emptyRecycleBin);
     }
 
-    public List<Delete> delete(Collection<SObject> objects, boolean exceptionOnFail, boolean slowDown) throws ConnectionException {
+    public List<Delete> delete(Collection<SObject> objects, boolean exceptionOnFail, boolean slowDown, boolean emptyRecycleBin) throws ConnectionException {
         if (objects.isEmpty()) {
             return ImmutableList.of();
         }
@@ -547,7 +547,7 @@ public class Connection {
         for (SObject o : objects) {
             ids.add(o.getId());
         }
-        return deleteById(ids, exceptionOnFail, slowDown);
+        return deleteById(ids, exceptionOnFail, slowDown, emptyRecycleBin);
     }
 
     public void flush(SObjectType objectMeta) throws ConnectionException {
@@ -568,18 +568,18 @@ public class Connection {
         for (SObject o : result) {
             ids.add(o.getId());
         }
-        return deleteById(ids, exceptionOnFail, false);
+        return deleteById(ids, exceptionOnFail, false, true);
     }
 
-    public List<Delete> deleteById(String id) throws ConnectionException {
-        return deleteById(ImmutableList.of(id));
+    public List<Delete> deleteById(String id, boolean emptyRecycleBin) throws ConnectionException {
+        return deleteById(ImmutableList.of(id), emptyRecycleBin);
     }
 
-    public List<Delete> deleteById(Collection<String> ids) throws ConnectionException {
-        return deleteById(ids, true, false);
+    public List<Delete> deleteById(Collection<String> ids, boolean emptyRecycleBin) throws ConnectionException {
+        return deleteById(ids, true, false, emptyRecycleBin);
     }
 
-    public List<Delete> deleteById(Collection<String> ids, boolean exceptionOnFail, boolean slowDown) throws ConnectionException {
+    public List<Delete> deleteById(Collection<String> ids, boolean exceptionOnFail, boolean slowDown, boolean emptyRecycleBin) throws ConnectionException {
         if (ids.isEmpty()) {
             return ImmutableList.of();
         }
@@ -592,6 +592,9 @@ public class Connection {
             logger.info("Deleting {} objects. {} left", ids.size(), idsList.size());
             List<String> portion = idsList.subList(0, Math.min(DEFAULT_BATCH_SIZE, idsList.size()));
             com.sforce.soap.partner.DeleteResult[] res = connection.delete(portion.toArray(new String[0]));
+            if (emptyRecycleBin) {
+                EmptyRecycleBinResult[] emptyRecycleBinResults = connection.emptyRecycleBin(portion.toArray(new String[0]));
+            }
             onApiRequest(ApiRequestType.DELETE);
             for (int i = 0; i < res.length; i++) {
                 com.sforce.soap.partner.DeleteResult r = res[i];

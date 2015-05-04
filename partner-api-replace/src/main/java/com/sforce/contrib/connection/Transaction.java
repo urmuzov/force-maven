@@ -53,21 +53,21 @@ public class Transaction {
         int createSize = createPool.size();
         int updateSize = updatePool.size();
         int deleteSize = deletePool.size();
-        return commitDeferred(createSize + updateSize + deleteSize > Connection.SLOW_DOWN_OBJECT_COUNT);
+        return commitDeferred(createSize + updateSize + deleteSize > Connection.SLOW_DOWN_OBJECT_COUNT, deleteSize > Connection.DEFAULT_BATCH_SIZE);
     }
 
-    public CommitResult commitDeferred(boolean slowDown) throws ConnectionException {
-        return commitDeferred(slowDown, false);
+    public CommitResult commitDeferred(boolean slowDown, boolean emptyRecycleBin) throws ConnectionException {
+        return commitDeferred(slowDown, false, emptyRecycleBin);
     }
 
-    public CommitResult commitDeferred(boolean slowDown, boolean exceptionOnFail) throws ConnectionException {
+    public CommitResult commitDeferred(boolean slowDown, boolean exceptionOnFail, boolean emptyRecycleBin) throws ConnectionException {
         int createSize = createPool.size();
         int updateSize = updatePool.size();
         int deleteSize = deletePool.size();
         logger.info("Commiting deferred data: creating {}, updating {}, deleteing {}; slowDown: {}; exceptionOnFail: {}", createSize, updateSize, deleteSize, slowDown, exceptionOnFail);
 
         try {
-            List<Delete> deletes = connection.deleteById(deletePool, exceptionOnFail, slowDown);
+            List<Delete> deletes = connection.deleteById(deletePool, exceptionOnFail, slowDown, emptyRecycleBin);
             List<Save> creates = connection.create(createPool, exceptionOnFail, slowDown);
             List<Save> updates = connection.update(updatePool, exceptionOnFail, slowDown);
             return new CommitResult(creates, updates, deletes);
